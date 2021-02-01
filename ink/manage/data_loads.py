@@ -9,14 +9,16 @@ import zipfile
 from tqdm import tqdm
 
 # set home dir for default
-DEFAULT_SOURCE_DIR = os.path.join(config.path[0], 'sources')
-DEFAULT_MODELS_URL = config.source
+
 
 DEFAULT_DOWNLOAD_VERSION = 'latest'
 
 basic_data_needs = ['sgns300','rev_vocab','vocab']
 derfault_nlp_missions =['seq','ner','cws','typ']
-
+def get_source_dir():
+    return os.path.join(config.path[0], 'sources')
+def get_model_url():
+    return config.source
 
 # download a ud models zip file
 def download_ud_model(task_name, resource_dir=None, should_unzip=True, confirm_if_exists=False, force=False,
@@ -37,13 +39,13 @@ def download_ud_model(task_name, resource_dir=None, should_unzip=True, confirm_i
         # set up data directory
         if resource_dir is None:
             print('')
-            print('Default download directory: ' + DEFAULT_SOURCE_DIR)
+            print('Default download directory: ' + get_source_dir())
             print('Hit enter to continue or type an alternate directory.')
             where_to_download = '' if force else input()
             if where_to_download != '':
                 download_dir = where_to_download
             else:
-                download_dir = DEFAULT_SOURCE_DIR
+                download_dir = get_source_dir()
         else:
             download_dir = resource_dir
         if not os.path.exists(download_dir):
@@ -51,7 +53,7 @@ def download_ud_model(task_name, resource_dir=None, should_unzip=True, confirm_i
         print('')
         print('Downloading models for: '+task_name)
         model_zip_file_name = task_name+'.zip'
-        download_url = DEFAULT_MODELS_URL+model_zip_file_name
+        download_url = get_model_url()+model_zip_file_name
         print(download_url)
         download_file_path = os.path.join(download_dir, model_zip_file_name)
         print('Download location: '+download_file_path)
@@ -86,7 +88,7 @@ def unzip_ud_model(lang_name, zip_file_src, zip_file_target):
 
 
 # main download function
-def loads(download_label, resource_dir=DEFAULT_SOURCE_DIR, confirm_if_exists=False, force=False, version=DEFAULT_DOWNLOAD_VERSION):
+def loads(download_label, resource_dir=get_source_dir(), confirm_if_exists=False, force=False, version=DEFAULT_DOWNLOAD_VERSION):
     if download_label in basic_data_needs:
         print('downloading basic data needs')
         download_ud_model(download_label, resource_dir=resource_dir, confirm_if_exists=confirm_if_exists, force=force,
