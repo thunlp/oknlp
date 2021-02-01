@@ -21,8 +21,7 @@ def get_model_url():
     return config.source
 
 # download a ud models zip file
-def download_ud_model(task_name, resource_dir=None, should_unzip=True, confirm_if_exists=False, force=False,
-                      version=DEFAULT_DOWNLOAD_VERSION):
+def download_ud_model(task_name, resource_dir=None, should_unzip=True, confirm_if_exists=False, force=False):
     if resource_dir is not None and os.path.exists(os.path.join(resource_dir, "{}_models".format(task_name))):
         if confirm_if_exists:
             print("")
@@ -81,25 +80,24 @@ def download_ud_model(task_name, resource_dir=None, should_unzip=True, confirm_i
 
 
 # unzip a ud models zip file
-def unzip_ud_model(lang_name, zip_file_src, zip_file_target):
-    print('Extracting models file for: '+lang_name)
+def unzip_ud_model(task_name, zip_file_src, zip_file_target):
+    print('Extracting models file for: '+task_name)
     with zipfile.ZipFile(zip_file_src, "r") as zip_ref:
         zip_ref.extractall(zip_file_target)
 
 
 # main download function
-def loads(download_label, resource_dir=get_source_dir(), confirm_if_exists=False, force=False, version=DEFAULT_DOWNLOAD_VERSION):
+def loads(download_label,confirm_if_exists=False, force=False, version=DEFAULT_DOWNLOAD_VERSION):
     if download_label in basic_data_needs:
         print('downloading basic data needs')
-        download_ud_model(download_label, resource_dir=resource_dir, confirm_if_exists=confirm_if_exists, force=force,
-                          version=version)
+        download_ud_model(download_label, confirm_if_exists=confirm_if_exists, force=force)
 
     elif download_label in derfault_nlp_missions:
         print('downloading {} data'.format(download_label))
-        download_ud_model(download_label, resource_dir=resource_dir,
-                          confirm_if_exists=confirm_if_exists, force=force, version=version)
+        download_ud_model(download_label,
+                          confirm_if_exists=confirm_if_exists, force=force)
     else:
-        raise ValueError('The data of '+download_label+'is not currently supported by this function. Please try again with other name.')
+        raise ValueError('The data of %s is not currently supported by this function. Please try again with other name.'%download_label)
 
 
 
