@@ -38,8 +38,8 @@ def check_file_comp(task_name,resource_dir):
     elif task_name in default_nlp_missions:
         for fl in default_nlp_missions[task_name]:
             if not os.path.exists(os.path.join(resource_dir, fl)):
-                return 0
-        return 1
+                return False
+        return True
 
 # download a ud models zip file
 def download_ud_model(task_name):
