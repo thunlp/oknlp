@@ -84,7 +84,7 @@ def unzip_ud_model(task_name, zip_file_src, zip_file_target):
 
 
 # main download function
-def loads(download_label):
+def load(download_label):
     if download_label in basic_data_needs or download_label in default_nlp_missions:
         df_path =  download_ud_model(download_label)
         return df_path
