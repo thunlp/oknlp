@@ -1,0 +1,16 @@
+name: test
+version: 2
+path: "test_v2.zip"
+files:
+  - "test1"
+  - "test2"
+  - dir: test3    # 目录名
+    files:        # 目录下的文件列表，目录的结构可以嵌套
+    - test4
+    - test4.5
+    - dir: test5
+      files:
+      - "test6"
+      - "test7"
+description: |
+  测试用例2

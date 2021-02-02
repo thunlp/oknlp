@@ -1,0 +1,7 @@
+name: sgns300
+version: 1
+path: "sgns300.zip"
+files:
+  - "sgns300"
+description: |
+  词嵌入
