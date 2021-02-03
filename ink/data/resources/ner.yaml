@@ -1,0 +1,8 @@
+name: ner
+version: 1
+path: "ner.zip"
+files:
+  - "msra_ner.txt"
+  - "tagset.txt"
+  - "bert2.pth"
+description: NER模型

@@ -1,10 +1,12 @@
 import setuptools
 from tools import get_requirements, get_readme, get_version
 
+PACKAGE_SHORT_NAME = "ink"
+
 
 def main():
     setuptools.setup(
-        name="ink",
+        name=PACKAGE_SHORT_NAME,
         version=get_version(),
         author="THUNLP",
         author_email="thunlp@gmail.com",
@@ -20,7 +22,14 @@ def main():
         ],
         python_requires=">=3.6",
         setup_requires=["wheel"],
-        install_requires=get_requirements()
+        install_requires=get_requirements(),
+        include_package_data=True,
+        package_data={
+            PACKAGE_SHORT_NAME: [
+                "data/resources/*.yaml",
+                "data/resources/*.yml"
+            ]
+        }
     )
 
 if __name__ == "__main__":

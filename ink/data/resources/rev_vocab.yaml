@@ -1,0 +1,7 @@
+name: rev_vocab
+version: 1
+path: "rev_vocab.zip"
+files:
+  - "rev_vocab.pkl"
+description: |
+  反向词典

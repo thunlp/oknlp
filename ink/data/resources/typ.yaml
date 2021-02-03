@@ -1,0 +1,8 @@
+name: typ
+version: 1
+path: "typ.zip"
+files:
+  - typing.txt
+  - types.txt
+  - typing.pth
+description: Typing模型

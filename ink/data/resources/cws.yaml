@@ -1,0 +1,8 @@
+name: cws
+version: 1
+path: "cws.zip"
+files:
+  - "cws.txt"
+  - "tagset_cws.txt"
+  - "cws.pth"
+description: 中文分词模型

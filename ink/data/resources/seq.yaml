@@ -1,0 +1,8 @@
+name: seq
+version: 1
+path: "seq.zip"
+files:
+  - "msra_ner.txt"
+  - "tagset.txt"
+  - "bert2.pth"
+description: NER模型
