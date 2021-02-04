@@ -2,3 +2,4 @@ torch >= 1.0.0
 PyYaml
 requests
 tqdm
+transformers
