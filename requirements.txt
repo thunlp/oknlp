@@ -3,3 +3,5 @@ PyYaml
 requests
 tqdm
 transformers
+torchtext
+numpy
