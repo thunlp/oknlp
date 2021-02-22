@@ -1,2 +1,2 @@
-from .tasks.cws import cws
-from .tasks.ner import ner
+from .tasks.cws import ChineseWordSegmentation
+from .tasks.ner import NamedEntityRecognition
