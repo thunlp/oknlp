@@ -7,14 +7,14 @@ import requests
 import zipfile
 import logging
 from tqdm import tqdm
+from ink.data.resources import get_resouce_info
 
 # set home dir for default
 logger = logging.Logger(__name__)
 
 
-basic_data_needs = {'sgns300':'sgns300','rev_vocab':'rev_vocab.pkl','vocab':'vocab.pkl'}
-default_nlp_missions ={'seq':['msra_ner.txt','tagset.txt','bert2.pth'],'ner':['msra_ner.txt','tagset.txt','bert2.pth'],
-                        'cws':['cws.txt','tagset_cws.txt','cws.pth'],'typ':['typing.txt','types.txt','typing.pth']}
+basic_data_needs = ['sgns300','rev_vocab','vocab']
+default_nlp_missions =['seq','cws','ner','typ']
 
 def get_data_dir(task_name):
     assert  len(config.path) != 0
@@ -34,9 +34,9 @@ def get_model_url():
 
 def check_file_comp(task_name,resource_dir):
     if task_name in basic_data_needs:
-        return os.path.exists(os.path.join(resource_dir,basic_data_needs[task_name]))
+        return os.path.exists(os.path.join(resource_dir,get_resouce_info(task_name)['files']))
     elif task_name in default_nlp_missions:
-        for fl in default_nlp_missions[task_name]:
+        for fl in get_resouce_info(task_name)['files']:
             if not os.path.exists(os.path.join(resource_dir, fl)):
                 return False
         return True
@@ -52,6 +52,8 @@ def download_ud_model(task_name):
         download_file_path = os.path.join(download_dir, model_zip_file_name)
         logger.info('Download location: '+download_file_path)
         # initiate download
+        print('-------------------------------------------------------------------------------------------------')
+        print(download_url)
         r = requests.get(download_url, stream=True)
         with open(download_file_path, 'wb') as f:
             file_size = int(r.headers.get('content-length'))
