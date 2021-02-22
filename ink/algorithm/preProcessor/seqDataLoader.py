@@ -21,6 +21,7 @@ class SeqDataset(GeneralDataset):
 
     def __init__(self, file_path, vocab_path, embedding_path, tag_path, bert_tokenizer=None, max_sentence_length=80,
                  dir_name_given=None):
+        print(file_path)
         GeneralDataset.__init__(self, file_path)
         self.bert_tokenizer = bert_tokenizer
         self.dir_name_given = dir_name_given
@@ -33,15 +34,16 @@ class SeqDataset(GeneralDataset):
                 self.tag2id = dict((tag, idx + 1) for idx, tag in enumerate(tagset))  # 0 is padding
                 self.id2tag = dict((idx + 1, tag) for idx, tag in enumerate(tagset))
         except:
-            self.tokens, self.tags, self.lengths = [], [], []
-            # self.transformer = SeqTransformer(vocab_path,embedding_path,tag_path,bert_tokenizer,max_sentence_length)
+
+            self.tokens, self.tags, self.lengths, self.masks = [], [], [], []
             self.id2tag = self.transformer.tagging()
             # translation
             for item in self.input:
-                tk, tg, l = self.transformer.item2id(item)
+                tk, tg, mask = self.transformer.item2id(item)
                 self.tokens.append(tk)
                 self.tags.append(tg)
-                self.lengths.append(l)
+                self.lengths.append(len(tk))
+                self.masks.append(mask)
             self.tokens = np.array(self.tokens)
             self.tags = np.array(self.tags)
             self.lengths = np.array(self.lengths)
@@ -111,7 +113,9 @@ class SeqTransformer(GeneralTransformer):
             tokens = self.emb_padding(tokens)
 
         tags = self.padding([self.tag2id[t] for t in (item['tag'].split(' '))])
-        masks = sequence_mask(l, device=None)
+        lens = torch.LongTensor([l])
+        masks = sequence_mask(lens, device=None)
+
         return tokens, tags, masks
 
     def _word_to_emb(self, word):

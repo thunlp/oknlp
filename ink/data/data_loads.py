@@ -88,6 +88,10 @@ def load(download_label):
     if download_label in basic_data_needs or download_label in default_nlp_missions:
         df_path =  download_ud_model(download_label)
         return df_path
+    elif download_label == '':
+        for bta in basic_data_needs:
+            df_path = download_ud_model(bta)
+        return df_path
     else:
         raise ValueError('The data of %s is not currently supported by this function. Please try again with other name.'%download_label)
 

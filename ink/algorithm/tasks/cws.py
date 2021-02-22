@@ -2,6 +2,7 @@ import torch
 import os
 from ..preProcessor import SeqDataset
 from ink.nn.models.bertlstmcrf import BERT_LSTM
+from ink.data import  load
 
 torch.manual_seed(2018)
 
@@ -36,15 +37,15 @@ def get_word(path, tag_map):
 
 
 def cws(sents):
-    cws_path = ''
-    basic_path = ''
+    cws_path = load('cws')
+    basic_path = load('')
     model = BERT_LSTM(input_size = 300, hidden_size = 200, label_sizes = [3], toplayer = 'CRF')
     seq  = SeqDataset(file_path = os.path.join(cws_path , "cws.txt"), embedding_path = os.path.join(basic_path , 'sgns300'),
                      vocab_path = os.path.join(basic_path , 'vocab.pkl'),tag_path = os.path.join(cws_path , 'tagset_cws.txt'),
                      bert_tokenizer = 'bert-base-chinese')
     results = []
     id2tag = seq.tagging()
-    checkpoint = torch.load(os.path.join(cws_path , "cws.pth"), map_location=lambda storage, loc: storage)
+    checkpoint = torch.load(os.path.join(cws_path, "cws.pth"), map_location=lambda storage, loc: storage)
     model.load_state_dict(checkpoint['net'],False)
     for sent in sents:
 
@@ -55,8 +56,9 @@ def cws(sents):
         result = ''
 
         with torch.no_grad():
-            out, loss, tag = model(3, tokens, mask, tags)
-            out, tag = out.numpy().tolist(), tag.numpy().tolist()
+            out = model.predict(3, tokens, mask)
+            #print(out)
+            out = out.numpy().tolist()
             out_etts = [get_word(line, id2tag) for line in out]
 
             for seg in out_etts[0]:
