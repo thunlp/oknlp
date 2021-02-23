@@ -1,8 +1,7 @@
 import os
 import re
-import torch
 import numpy as np
-from .preProcessor import GeneralDataset, GeneralTransformer
+from .pre_processor import GeneralTransformer
 
 
 def convert_pos_to_mask(e_pos, max_len=128):
@@ -11,40 +10,16 @@ def convert_pos_to_mask(e_pos, max_len=128):
         e_pos_mask[i] = 1
     return e_pos_mask
 
-class RelDataset(GeneralDataset):
-    def __init__(self, file_path, vocab_path, embedding_path, rel_path, bert_tokenizer=None, max_sentence_length=80,
+class RelDataset:
+    def __init__(self,vocab_path, embedding_path, rel_path, bert_tokenizer=None, max_sentence_length=80,
                  dir_name_given=None):
-        GeneralDataset.__init__(self, file_path)
         self.tokens, self.rels, self.lengths, self.masks = [], [], [], []
         # translation
         self.dir_name_given = dir_name_given
         self.bert_tokenizer = bert_tokenizer
-        try:
-            self.load()
-        except:
-            self.transformer = RelTransformer(vocab_path, embedding_path, rel_path, bert_tokenizer=bert_tokenizer,
+        self.transformer = RelTransformer(vocab_path, embedding_path, rel_path, bert_tokenizer=bert_tokenizer,
                                               max_sentence_length=80)
-            for item in self.input:
-                #   hrts = []
-                try:
-                    # one line one pair
-                    if (len(item['text']) > 80):
-                        continue
-                    to, re, mask = self.transformer.item2id(item)
 
-                    self.tokens.append(to)
-                    self.rels.append(re)
-                    self.lengths.append(len(to))
-                    self.masks.append(mask)
-                except:
-                    pass
-                # transform
-            self.tokens = np.array(self.tokens)
-            self.tags = np.array(self.tags)
-            self.lengths = np.array(self.lengths)
-            self.masks = np.array(self.masks)
-            self.tokens = self.tokens.astype(np.int64)
-            self.save()
 
     def save(self):
 
@@ -58,9 +33,9 @@ class RelDataset(GeneralDataset):
             os.mkdir(dir_name)
         except:
             pass
-        np.save(dir_name + "/tokens.npy", self.tokens)
-        np.save(dir_name + "/relations.npy", self.rels)
-        np.save(dir_name + "/masks.npy", self.masks)
+        np.save(os.path.join(dir_name, "tokens.npy"), self.tokens)
+        np.save(os.path.join(dir_name, "relations.npy"), self.rels)
+        np.save(os.path.join(dir_name, "masks.npy"), self.masks)
 
     def load(self):
 
@@ -70,9 +45,9 @@ class RelDataset(GeneralDataset):
             dir_name = "RelCached"
         if (self.dir_name_given is not None):
             dir_name = self.dir_name_given
-        self.tokens = np.load(dir_name + "/tokens.npy")
-        self.rels = np.load(dir_name + "/relations.npy")
-        self.masks = np.load(dir_name + "/masks.npy")
+        self.tokens = np.load(os.path.join(dir_name, "tokens.npy"))
+        self.rels = np.load(os.path.join(dir_name, "relations.npy"))
+        self.masks = np.load(os.apth.join(dir_name, "masks.npy"))
 
     def __getitem__(self, index):
         return (self.tokens[index], self.rels[index], self.masks[index])

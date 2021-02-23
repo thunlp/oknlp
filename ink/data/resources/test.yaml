@@ -1,9 +1,6 @@
-
 name: test
 version: 1
 path: "test.zip"
 files:
-  - "test1"
-  - dir: test2
-description: |
-  测试用例1
+  - "test.txt"
+description: 测试样例

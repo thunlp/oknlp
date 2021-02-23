@@ -1,7 +1,0 @@
-name: vocab
-version: 1
-path: "vocab.zip"
-files:
-  - "vocab.pkl"
-description: |
-  词典文件

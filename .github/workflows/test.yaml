@@ -19,10 +19,16 @@ jobs:
         architecture: 'x64'
     - uses: actions/cache@v2
       with:
-        path: ~/.cache/pip
+        path: |
+          ~/.cache/pip
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
         restore-keys: |
           ${{ runner.os }}-pip-
+    - uses: actions/cache@v2
+      with:
+        path: |
+          ~/.ink
+        key: ${{ runner.os }}-ink
     - name: Run test script
       run: |
         python setup.py sdist bdist_wheel

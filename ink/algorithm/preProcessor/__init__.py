@@ -1,3 +1,3 @@
-from .relDataLoader import RelDataset
-from .seqDataLoader import SeqDataset
-from .typDataLoader import TypDataset
+from .rel_dataloader import RelDataset
+from .seq_dataloader import SeqDataset
+from .typ_dataloader import TypDataset
