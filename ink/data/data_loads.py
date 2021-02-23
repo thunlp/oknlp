@@ -13,18 +13,13 @@ from ink.data.resources import get_resouce_info
 logger = logging.Logger(__name__)
 
 
-basic_data_needs = ['sgns300','rev_vocab','vocab']
-default_nlp_missions =['seq','cws','ner','typ']
 
 def get_data_dir(task_name):
     assert  len(config.path) != 0
     source_dir = os.path.join(config.path[0], 'sources')
     if not os.path.exists(source_dir):
         os.makedirs(source_dir)
-    if task_name in default_nlp_missions:
-        download_dir = os.path.join(source_dir, task_name)
-    else:
-        download_dir = os.path.join(source_dir, 'basic_data')
+    download_dir = os.path.join(source_dir, task_name)
     if not os.path.exists(download_dir):
         os.makedirs(download_dir)
     return  download_dir
@@ -82,15 +77,8 @@ def unzip_ud_model(task_name, zip_file_src, zip_file_target):
 
 # main download function
 def load(download_label):
-    if download_label in basic_data_needs or download_label in default_nlp_missions:
-        df_path =  download_ud_model(download_label)
-        return df_path
-    elif download_label == 'basic':
-        for bta in basic_data_needs:
-            df_path = download_ud_model(bta)
-        return df_path
-    else:
-        raise ValueError('The data of %s is not currently supported by this function. Please try again with other name.'%download_label)
+    df_path =  download_ud_model(download_label)
+    return df_path
 
 
 

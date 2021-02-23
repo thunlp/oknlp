@@ -1,0 +1,9 @@
+name: basic
+version: 1
+path: "basic.zip"
+files:
+  - "rev_vocab.pkl"
+  - "sgns300"
+  - "vocab.pkl"
+description:
+  词典、反向词典、词嵌入
