@@ -33,13 +33,10 @@ def get_model_url():
     return config.source
 
 def check_file_comp(task_name,resource_dir):
-    if task_name in basic_data_needs:
-        return os.path.exists(os.path.join(resource_dir,get_resouce_info(task_name)['files'][0]))
-    elif task_name in default_nlp_missions:
-        for fl in get_resouce_info(task_name)['files']:
-            if not os.path.exists(os.path.join(resource_dir, fl)):
-                return False
-        return True
+    for fl in get_resouce_info(task_name)['files']:
+        if not os.path.exists(os.path.join(resource_dir, fl)):
+            return False
+    return True
 
 # download a ud models zip file
 def download_ud_model(task_name):
