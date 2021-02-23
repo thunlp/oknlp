@@ -1,2 +1,2 @@
-from .ner import NamedEntityRecognition
-from .cws import ChineseWordSegmentation
+from .BertNER import NamedEntityRecognition
+from .BertCWS import ChineseWordSegmentation

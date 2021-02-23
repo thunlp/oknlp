@@ -1,7 +1,5 @@
 # encoding:utf-8
 import os
-import ujson
-from torchtext import data
 from transformers import BertTokenizer
 import pickle
 import numpy as np
@@ -18,29 +16,6 @@ def pkl_write(filename, data):
     with open(filename, 'wb') as f:
         pickle.dump(data, f)
 
-
-class GeneralDataset(data.Dataset):
-    def __init__(self, file_path):
-        self.input = []
-        with open(file_path, 'r', encoding='utf-8') as fin:
-            for line in fin:
-                try:
-                    js = ujson.loads(line.strip())
-                except:
-                    js = ujson.loads(line.strip().replace('\'', '\"'))
-                self.input.append(js)
-
-    def __len__(self):
-        return len(self.input)
-
-    def __getitem__(self, index):
-        return (self.input[index])
-
-    def save(self):
-        pass
-
-    def load(self):
-        pass
 
 
 class GeneralTransformer(object):

@@ -1,7 +1,7 @@
 import os
 import re
 import numpy as np
-from .pre_processor import GeneralDataset, GeneralTransformer
+from .pre_processor import GeneralTransformer
 
 
 def convert_pos_to_mask(e_pos, max_len=128):
@@ -10,39 +10,16 @@ def convert_pos_to_mask(e_pos, max_len=128):
         e_pos_mask[i] = 1
     return e_pos_mask
 
-class RelDataset(GeneralDataset):
-    def __init__(self, file_path, vocab_path, embedding_path, rel_path, bert_tokenizer=None, max_sentence_length=80,
+class RelDataset:
+    def __init__(self,vocab_path, embedding_path, rel_path, bert_tokenizer=None, max_sentence_length=80,
                  dir_name_given=None):
-        GeneralDataset.__init__(self, file_path)
         self.tokens, self.rels, self.lengths, self.masks = [], [], [], []
         # translation
         self.dir_name_given = dir_name_given
         self.bert_tokenizer = bert_tokenizer
-        try:
-            self.load()
-        except:
-            self.transformer = RelTransformer(vocab_path, embedding_path, rel_path, bert_tokenizer=bert_tokenizer,
+        self.transformer = RelTransformer(vocab_path, embedding_path, rel_path, bert_tokenizer=bert_tokenizer,
                                               max_sentence_length=80)
-            for item in self.input:
-                try:
-                    # one line one pair
-                    if (len(item['text']) > 80):
-                        continue
-                    to, re, mask = self.transformer.item2id(item)
 
-                    self.tokens.append(to)
-                    self.rels.append(re)
-                    self.lengths.append(len(to))
-                    self.masks.append(mask)
-                except:
-                    pass
-                # transform
-            self.tokens = np.array(self.tokens)
-            self.tags = np.array(self.tags)
-            self.lengths = np.array(self.lengths)
-            self.masks = np.array(self.masks)
-            self.tokens = self.tokens.astype(np.int64)
-            self.save()
 
     def save(self):
 

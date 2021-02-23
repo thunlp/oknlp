@@ -2,7 +2,7 @@ import os
 import re
 import torch
 import numpy as np
-from .pre_processor import GeneralDataset, GeneralTransformer
+from .pre_processor import GeneralTransformer
 from torch.autograd import Variable
 
 def sequence_mask(sequence_length, max_len=80, device=None, padding=True):  # sequence_length :(batch_size, )
@@ -17,43 +17,19 @@ def sequence_mask(sequence_length, max_len=80, device=None, padding=True):  # se
     seq_length_expand = (sequence_length.unsqueeze(1).expand_as(seq_range_expand))
     return seq_range_expand < seq_length_expand
 
-class SeqDataset(GeneralDataset):
+class SeqDataset:
 
-    def __init__(self, file_path, vocab_path, embedding_path, tag_path, bert_tokenizer=None, max_sentence_length=80,
+    def __init__(self, vocab_path, embedding_path, tag_path, bert_tokenizer=None, max_sentence_length=80,
                  dir_name_given=None):
 
-        GeneralDataset.__init__(self, file_path)
         self.bert_tokenizer = bert_tokenizer
         self.dir_name_given = dir_name_given
         self.transformer = SeqTransformer(vocab_path, embedding_path, tag_path, bert_tokenizer, max_sentence_length)
-        try:
-            self.load()
-            with open(tag_path, 'r', encoding='utf-8') as f_in:
-                tagset = re.split(r'\s+', f_in.read().strip())
+        with open(tag_path, 'r', encoding='utf-8') as f_in:
+            tagset = re.split(r'\s+', f_in.read().strip())
 
-                self.tag2id = dict((tag, idx + 1) for idx, tag in enumerate(tagset))  # 0 is padding
-                self.id2tag = dict((idx + 1, tag) for idx, tag in enumerate(tagset))
-        except:
-
-            self.tokens, self.tags, self.lengths, self.masks = [], [], [], []
-            self.id2tag = self.transformer.tagging()
-            # translation
-            for item in self.input:
-                tk, tg, mask = self.transformer.item2id(item)
-                self.tokens.append(tk)
-                self.tags.append(tg)
-                self.lengths.append(len(tk))
-                self.masks.append(mask)
-            self.tokens = np.array(self.tokens)
-            self.tags = np.array(self.tags)
-            self.lengths = np.array(self.lengths)
-            self.tokens = self.tokens.astype(np.int64)
-            self.lengths = self.lengths.astype(np.int64)
-            self.tags = self.tags.astype(np.int64)
-            try:
-                self.save()
-            except:
-                pass
+            self.tag2id = dict((tag, idx + 1) for idx, tag in enumerate(tagset))  # 0 is padding
+            self.id2tag = dict((idx + 1, tag) for idx, tag in enumerate(tagset))
 
     def tagging(self):
         return self.id2tag

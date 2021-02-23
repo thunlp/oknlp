@@ -1,7 +1,7 @@
 import os
 import re
 import numpy as np
-from .pre_processor import GeneralDataset, GeneralTransformer
+from .pre_processor import GeneralTransformer
 
 
 def convert_pos_to_mask(e_pos, max_len=128):
@@ -18,40 +18,15 @@ def multilb(shape, input):
     return label
 
 
-class TypDataset(GeneralDataset):
+class TypDataset:
     def __init__(self, file_path, vocab_path, embedding_path, type_path, bert_tokenizer=None, max_sentence_length=80,
                  dir_name_given=None):
-        GeneralDataset.__init__(self, file_path)
         self.tokens, self.types, self.lengths, self.masks = [], [], [], []
         # translation
         self.dir_name_given = dir_name_given
         self.bert_tokenizer = bert_tokenizer
-        try:
-            self.load()
-        except:
-            self.transformer = TypTransformer(vocab_path, embedding_path, type_path, bert_tokenizer=bert_tokenizer,
+        self.transformer = TypTransformer(vocab_path, embedding_path, type_path, bert_tokenizer=bert_tokenizer,
                                               max_sentence_length=80)
-            for item in self.input:
-
-                try:
-                    # one line one pair
-                    if (len(item['text']) > 80):
-                        continue
-                    to, types, mask = self.transformer.item2id(item)
-                    self.tokens.append(to)
-                    self.types.append(types)
-                    self.lengths.append(len(to))
-                    self.masks.append(mask)
-                except:
-                    pass
-                # transform
-            self.tokens = np.array(self.tokens)
-            self.types = np.array(self.types)
-            self.lengths = np.array(self.lengths)
-            self.masks = np.array(self.masks)
-            self.types = self.types.astype(np.float32)
-            self.tokens = self.tokens.astype(np.int64)
-            self.save()
 
     def save(self):
 

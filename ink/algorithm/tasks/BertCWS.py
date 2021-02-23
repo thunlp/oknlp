@@ -40,8 +40,7 @@ class ChineseWordSegmentation:
         self.cws_path = load('cws')
         self.basic_path = load('basic')
         self.model = BERT_LSTM(input_size=300, hidden_size=200, label_sizes=[3], toplayer='CRF')
-        self.seq = SeqDataset(file_path=os.path.join(self.cws_path, "cws.txt"),
-                         embedding_path=os.path.join(self.basic_path, 'sgns300'),
+        self.seq = SeqDataset( embedding_path=os.path.join(self.basic_path, 'sgns300'),
                          vocab_path=os.path.join(self.basic_path, 'vocab.pkl'),
                          tag_path=os.path.join(self.cws_path, 'tagset_cws.txt'),
                          bert_tokenizer='bert-base-chinese')

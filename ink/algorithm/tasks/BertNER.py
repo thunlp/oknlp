@@ -12,8 +12,7 @@ class NamedEntityRecognition:
         self.ner_path = load('ner')
         self.basic_path = load('basic')
         self.model = BERT_LSTM(input_size=300, hidden_size=200, label_sizes=[8], toplayer='CRF')
-        self.seq = SeqDataset(file_path=os.path.join(self.ner_path, "msra_ner.txt"),
-                         embedding_path=os.path.join(self.basic_path, 'sgns300'),
+        self.seq = SeqDataset( embedding_path=os.path.join(self.basic_path, 'sgns300'),
                          vocab_path=os.path.join(self.basic_path, 'vocab.pkl'),
                          tag_path=os.path.join(self.ner_path, 'tagset.txt'),
                          bert_tokenizer='bert-base-chinese')
