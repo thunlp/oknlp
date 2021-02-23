@@ -5,5 +5,4 @@ files:
   - "rev_vocab.pkl"
   - "sgns300"
   - "vocab.pkl"
-description:
-  词典、反向词典、词嵌入
+description: 词典、反向词典、词嵌入
