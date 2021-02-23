@@ -52,8 +52,6 @@ def download_ud_model(task_name):
         download_file_path = os.path.join(download_dir, model_zip_file_name)
         logger.info('Download location: '+download_file_path)
         # initiate download
-        print('-------------------------------------------------------------------------------------------------')
-        print(download_url)
         r = requests.get(download_url, stream=True)
         with open(download_file_path, 'wb') as f:
             file_size = int(r.headers.get('content-length'))
