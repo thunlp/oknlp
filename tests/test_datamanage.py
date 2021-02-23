@@ -16,7 +16,7 @@ class TestDataManager(unittest.TestCase):
         from ink.data import load
 
         config.path = [ DATA_DIR ]
-        self.assertTrue(load("vocab").startswith(DATA_DIR))
+        self.assertTrue(load("basic").startswith(DATA_DIR))
     
         with self.assertRaises(ValueError):
             load("unknown")
