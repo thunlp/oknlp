@@ -15,9 +15,13 @@ class TestDataManager(unittest.TestCase):
         from ink.config import config
         from ink.data import load
 
+        old = config.path
         config.path = [ DATA_DIR ]
-        self.assertTrue(load("test").startswith(DATA_DIR))
-    
+        path = load("test")
+        config.path = old
+
+        self.assertTrue(path.startswith(DATA_DIR))
+        
         with self.assertRaises(ValueError):
             load("unknown")
     
