@@ -25,39 +25,31 @@ class GeneralTransformer(object):
             self.rev_vocab = {v: k for k, v in self.vocab.items()}
         if os.path.isfile(embedding_path):
             embeddings_index = {}
-            try:
-                logger.info("loading_embedding_matrix...")
-                self.embedding_matrix = np.load("emb.npy")
-                logger.info("loaded.")
-            except:
-                logger.error("no embedding matrix found")
-                with open(embedding_path, 'r', errors='ignore', encoding='utf8') as f:
-                    for line in f:
-                        values = line.rstrip().split(' ')
+            with open(embedding_path, 'r', errors='ignore', encoding='utf8') as f:
+                for line in f:
+                    values = line.rstrip().split(' ')
 
-                        if len(values) < 10:
-                            continue
-                        try:
-                            word = values[0]
-                            coefs = np.asarray(values[1:], dtype='float32')
-                            embeddings_index[word] = coefs
-                        except:
-                            logger.error("Error on ", values[:2])
+                    if len(values) < 10:
+                        continue
+                    try:
+                        word = values[0]
+                        coefs = np.asarray(values[1:], dtype='float32')
+                        embeddings_index[word] = coefs
+                    except:
+                        logger.error("Error on ", values[:2])
 
-                all_embs = np.stack((embeddings_index.values()))
-                emb_mean = all_embs.mean()
-                emb_std = all_embs.std()
-                embed_size = all_embs.shape[1]
-                nb_words = len(self.vocab)
+            all_embs = np.stack((embeddings_index.values()))
+            emb_mean = all_embs.mean()
+            emb_std = all_embs.std()
+            embed_size = all_embs.shape[1]
+            nb_words = len(self.vocab)
 
-                embedding_matrix = np.random.normal(emb_mean, emb_std, (nb_words, embed_size))
-                for word, id in self.vocab.items():
-                    embedding_vector = embeddings_index.get(word)
-                    if embedding_vector is not None:
-                        embedding_matrix[id] = embedding_vector
-                self.embedding_matrix = embedding_matrix.astype(np.float32)
-
-                np.save("emb.npy", self.embedding_matrix)
+            embedding_matrix = np.random.normal(emb_mean, emb_std, (nb_words, embed_size))
+            for word, id in self.vocab.items():
+                embedding_vector = embeddings_index.get(word)
+                if embedding_vector is not None:
+                    embedding_matrix[id] = embedding_vector
+            self.embedding_matrix = embedding_matrix.astype(np.float32)
         if bert_tokenizer:
             self.tokenizer = BertTokenizer.from_pretrained(bert_tokenizer)
         else:
