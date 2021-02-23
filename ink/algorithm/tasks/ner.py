@@ -1,6 +1,6 @@
 import torch
 import os
-from ..preprocessor import SeqDataset
+from ..preProcessor import SeqDataset
 from ink.nn.models.bertlstmcrf import BERT_LSTM
 from ink.utils.format import get_entity
 from ink.data import  load
