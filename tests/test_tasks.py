@@ -15,3 +15,21 @@ class TestTasks(unittest.TestCase):
         re2 = ['我 爱 北 京 天 安门']
         result_cws = ChineseWordSegmentation().cws(sents)
         self.assertTrue(result_cws, re2)
+
+    def test_pos_tagging(self):
+        # output (for example):
+        # [
+        #  [['B-P', 'E-P', 'S-DT', ...], [((0, 2), 'P'), ((2, 3), 'DT'), ...]],
+        #  [['B-JJ', 'E-JJ', 'B-NN', 'E-NN', ...], [((0, 2), 'JJ'), ((2, 4), 'NN'), ...]]
+        # ]
+        from ink.algorithm import PosTagging
+        pos_tagging = PosTagging()
+        results = pos_tagging(sents)
+        self.assertEqual(len(sents), len(results))
+        for idx, result in enumerate(results):
+            self.assertEqual(len(sents[idx]), len(result[0]))
+            last_end = 0
+            for (begin, end), _ in result[1]:
+                self.assertEqual(last_end, begin)
+                last_end = end
+            self.assertEqual(len(result[0]), last_end)

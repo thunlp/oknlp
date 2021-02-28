@@ -1,0 +1,6 @@
+name: pos
+version: 1
+path: "pos.zip"
+files:
+  - "params.ckpt"           
+description: PosTagging模型 
