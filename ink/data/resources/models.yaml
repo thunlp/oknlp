@@ -1,0 +1,18 @@
+name: models
+version: 1
+path: "models.zip"
+files:
+  - "ws_dat.bin"
+  - "model_c_label.txt" 
+  - "t2s.dat"
+  - "cws_label.txt"           
+  - "model_c_model.bin"       
+  - "time.dat"
+  - "cws_model.bin" 
+  - "neg.dat"
+  - "xu.dat"
+  - "idiom.dat"
+  - "ns.dat"
+  - "model_c_dat.bin"
+  - "singlepun.dat"
+description: cpu分词模型
