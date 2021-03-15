@@ -10,7 +10,7 @@ def main():
           author_email="luyanjun1116@gmail.com",
           ext_modules=[
               Extension("lacthu",
-              extra_compile_args=["-O3","-Wall","-std=c++11"],
+             extra_compile_args=["-O2","-Wall","-std=c++11"],
               sources = ["thulac_cls.cc"],
               include_dirs = [os.path.join(path,'include')],
               )])

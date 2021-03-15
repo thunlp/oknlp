@@ -60,13 +60,13 @@ public:
     void adjust(SegmentedSentence& sentence){
         if(!p_dat)return;
         std::vector<Word> tmpVec;
-        for(int i = 0 ; i < sentence.size(); i ++){
+        for(int i = 0 ; i < (int)sentence.size(); i ++){
             Word tmp = sentence[i];
             if(p_dat->get_info(tmp) >= 0) continue;
 
             tmpVec.clear();
             int j;
-            for(j = i + 1; j < sentence.size(); j ++){
+            for(j = i + 1; j < (int)sentence.size(); j ++){
                 tmp += sentence[j];
                 if(p_dat->get_info(tmp) >= 0){
                     break;
@@ -95,7 +95,7 @@ public:
     void adjust(TaggedSentence& sentence){
         if(!p_dat)return;
         std::vector<Word> tmpVec;
-        for(int i = 0 ; i < sentence.size(); i ++){
+        for(int i = 0 ; i < (int)sentence.size(); i ++){
             Word tmp = sentence[i].word;
             if(p_dat->get_info(tmp) >= 0) continue;
 
@@ -103,7 +103,7 @@ public:
 
             tmpVec.clear();
             int j;
-            for(j = i + 1; j < sentence.size(); j ++){
+            for(j = i + 1; j < (int)sentence.size(); j ++){
                 tmp += sentence[j].word;
                 if(p_dat->get_info(tmp) >= 0){
                     break;
@@ -137,7 +137,7 @@ public:
     void adjustSame(TaggedSentence& sentence){
         if(!p_dat)return;
         std::vector<Word> tmpVec;
-        for(int i = 0 ; i < sentence.size(); i ++){
+        for(int i = 0 ; i < (int)sentence.size(); i ++){
             Word tmp = sentence[i].word;
             if(p_dat->get_info(tmp) >= 0) continue;
 

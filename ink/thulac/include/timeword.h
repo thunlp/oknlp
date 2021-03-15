@@ -56,7 +56,7 @@ public:
 	inline bool isArabicNum(Word word){
 		bool allArabic = true;
 		std::set<int>::iterator it;
-		for(int i = 0; i < word.size(); i ++){
+		for(int i = 0; i < (int)word.size(); i ++){
 			it = arabicNumSet.find(word[i]);
 			if(it == arabicNumSet.end()){
 				allArabic = false;
@@ -115,7 +115,7 @@ public:
 	void adjust(SegmentedSentence& sentence){
 		int size = sentence.size();
 		Word word;
-		int count = 0;
+		//int count = 0;
 		bool hasTimeWord = false;
 		std::set<int>::iterator it;
 

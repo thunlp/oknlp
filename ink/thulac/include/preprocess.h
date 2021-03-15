@@ -125,16 +125,16 @@ public:
         bool hasSpace = false;		//use to check whether the char is a space 
 		bool hasOther = false;		//use to check whether isOther(char);
 		bool hasSinglePun = false;	//use to check whether isSinglePun(char);
-		bool hasHttp = false;		//use to check whether isHttp(char);
-		bool hasAt = false;			//use to check whether the char is @
+		//bool hasHttp = false;		//use to check whether isHttp(char);
+		//bool hasAt = false;			//use to check whether the char is @
 		bool hasTitle = false;		//use to check whether the sentence has 《》
 		std::vector<int> httpStartVec;
-		int httpStart = -1;
+		//int httpStart = -1;
 		std::vector<Raw> httpVec;
         int c = -1;
 		Raw tmpRaw;
 		Raw npRaw;
-		int npStart = -1;
+		//int npStart = -1;
 		std::vector<int> npStartVec;
 		std::vector<Raw> npVec;
 		Raw titleRaw;
@@ -324,7 +324,7 @@ public:
 		// 	}
 		// }
 
-		for(int i = 0; i < titleVec.size(); i ++){
+		for(std::string::size_type i = 0; i < titleVec.size(); i ++){
 			titleRaw = titleVec[i];
 			if(isPossibleTitle(titleRaw)){
 				int start = titleStartVec[i];
@@ -354,7 +354,7 @@ public:
 		if(titleRaw.size() > 10 || titleRaw.size() == 0){
 			return false;
 		}else{
-			for(int i = 0; i < titleRaw.size(); i ++){
+			for(std::string::size_type i = 0; i < titleRaw.size(); i ++){
 				if(isOther(titleRaw[i])){
 					return false;
 				}
@@ -383,7 +383,7 @@ public:
 	
 	bool containsT(RawSentence& sentence){
 		std::map<int,int>::iterator it;
-		for(int i = 0; i < sentence.size(); i ++){
+		for(std::string::size_type i = 0; i < sentence.size(); i ++){
 			it = t2s.find(sentence[i]);
 			if(it != t2s.end()){
 				return true;
@@ -394,15 +394,15 @@ public:
 
 	void T2S(RawSentence& sentence, RawSentence& newSentence){
 		newSentence.clear();
-		for(int i = 0; i < sentence.size();i ++){
+		for(std::string::size_type i = 0; i < sentence.size();i ++){
 			newSentence.push_back(getT2S(sentence[i]));
 		}
 	}
 	
 	void S2T(TaggedSentence& sentence, RawSentence& oriSentence){
 		int count = 0;
-		for(int i = 0; i < sentence.size();i ++){
-			for(int j = 0; j < sentence[i].word.size(); j ++){
+		for(std::string::size_type i = 0; i < sentence.size();i ++){
+			for(std::string::size_type j = 0; j < sentence[i].word.size(); j ++){
 				sentence[i].word[j] = oriSentence[count];
 				count ++;
 			}

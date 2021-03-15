@@ -60,12 +60,12 @@ public:
         int right=0;int right2=0;
         RawSentence key;
         RawSentence bigram;
-        for(int i=0;i<seq.size();i++){
+        for(int i=0;i<(int)seq.size();i++){
             mid=seq[i];
             left=(i>0)?(seq[i-1]):(SENTENCE_BOUNDARY);
             left2=((i-2)>=0)?(seq[i-2]):(SENTENCE_BOUNDARY);
-            right=((i+1)<seq.size())?(seq[i+1]):(SENTENCE_BOUNDARY);
-            right2=((i+2)<seq.size())?(seq[i+2]):(SENTENCE_BOUNDARY);
+            right=((i+1)<(int)seq.size())?(seq[i+1]):(SENTENCE_BOUNDARY);
+            right2=((i+2)<(int)seq.size())?(seq[i+2]):(SENTENCE_BOUNDARY);
             
             if(bigram_counter){
                 if(i==0){
@@ -177,7 +177,7 @@ private:
     inline void update_weight(int *value_offset,int base,int del,int label,int delta,long steps){
         int ind=dat[base].base+del;
         if(ind>=dat_size||dat[ind].check!=base)return;
-        register int offset=dat[dat[base].base+del].base;
+        int offset=dat[dat[base].base+del].base;
         model->update_fl_weight(offset,label,delta,steps);
         //model->fl_weights[offset*model->l_size+label]+=delta;
     }

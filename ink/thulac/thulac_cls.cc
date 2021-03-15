@@ -12,7 +12,7 @@ typedef struct {
 } THUlac;
 
 static void THUlac_dealloc(THUlac *self) {
-    std::free( self->lac) ;
+    delete self->lac ;
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
@@ -24,7 +24,7 @@ static PyObject *THUlac_new(PyTypeObject *type, PyObject *args, PyObject *kwds) 
 }
 
 static PyObject* THUlac_init(THUlac *self, PyObject *args, PyObject *kwds) {
-    char* raw = NULL;
+    //char* raw = NULL;
     char* model_path = NULL;
     char* user_specified_dict_name=NULL;
     bool useT2S = false;
@@ -43,7 +43,6 @@ static PyObject* THUlac_cws(THUlac *self, PyObject *args, PyObject *kwds) {
     char* raw = NULL; 
     PyArg_ParseTuple(args, "s", &raw);
     THULAC_result result;
-    self->lac->cut(raw,result);
     std::stringstream ss;
     for(size_t i = 0; i < result.size(); ++i)
     {

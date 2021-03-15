@@ -390,14 +390,14 @@ void TaggingDecoder::put_values(){
 
 
 void TaggingDecoder::output_raw_sentence(){
-    int c;
+    //int c;
     for(int i=0;i<len;i++){
         thulac::put_character(sequence[i]);
         
     }
 }
 void TaggingDecoder::output_sentence(){
-    int c;
+    //int c;
     for(int i=0;i<len;i++){
         thulac::put_character(sequence[i]);
         
@@ -434,7 +434,7 @@ int TaggingDecoder::segment(RawSentence& raw, POCGraph& graph, TaggedSentence& t
         allowed_label_lists[i]=NULL;
     }
 
-    int c;
+    //int c;
     int offset=0;
     ts.clear();
     for(int i=0;i<len;i++){

@@ -199,14 +199,19 @@ void THULAC::deinit() {
     	delete negword;
     	delete timeword;
     	delete punctuation;
+
     	if(useFilter){
     		delete filter;
     	}
     	if(seg_only) {
     		delete cws_decoder;
+            delete cws_model;
+            delete cws_dat;
     	}
     	else {
     		delete tagging_decoder;
+            delete tagging_dat;
+            delete tagging_model;
     	}
 }
 //
@@ -231,14 +236,14 @@ int THULAC::cut(const std::string &in, THULAC_result& result) const {
     std::vector<thulac::RawSentence> vec;
     while(true) {
         startraw = thulac::get_raw(oiraw, in, in_left, startraw);
-        if(oiraw.size() > max_length) {
+        if((int)oiraw.size() > max_length) {
             thulac::cut_raw(oiraw, vec, max_length);
         }
         else {
             vec.clear();
             vec.push_back(oiraw);
         }
-        for(int vec_num = 0; vec_num < vec.size(); vec_num++) {
+        for(int vec_num = 0; vec_num < (int)vec.size(); vec_num++) {
             if(useT2S) {
                 preprocesser->clean(vec[vec_num],traw,poc_cands);
                 preprocesser->T2S(traw, raw);
@@ -264,7 +269,7 @@ int THULAC::cut(const std::string &in, THULAC_result& result) const {
                     if(useFilter){
                         filter->adjust(segged);
                     }
-                    for(int j = 0; j < segged.size(); j++){
+                    for(int j = 0; j < (int)segged.size(); j++){
                         ous.str("");
                         ous << segged[j];
                         result.push_back(std::make_pair<std::string, std::string>(ous.str(), ""));
@@ -283,7 +288,7 @@ int THULAC::cut(const std::string &in, THULAC_result& result) const {
                     if(useFilter){
                         filter->adjust(tagged);
                     }
-                    for(int j = 0; j < tagged.size(); j++) {
+                    for(int j = 0; j < (int)tagged.size(); j++) {
                         ous.str("");
                         ous << tagged[j].word;
                         std::string s = tagged[j].tag;
@@ -345,9 +350,9 @@ int foo(int a, int b) {
 }
 THULAC_result& multiTreadCut(const std::string &in, THULAC& lac, int thread) {
     std::vector<std::future<THULAC_result> > t;
-    THULAC_result output;
+    static THULAC_result output;
     std::vector<std::string> splited = eqSeg(in, thread);
-    int s_len = splited.size();
+    //int s_len = splited.size();
     for(int i=0; i<thread; i++) {
         t.push_back(std::async(&cut, splited[i], lac));
     }
