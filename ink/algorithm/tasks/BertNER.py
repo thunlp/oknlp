@@ -20,6 +20,13 @@ class NamedEntityRecognition:
         self.checkpoint = torch.load(os.path.join(self.ner_path, "bert2.pth"), map_location=lambda storage, loc: storage)
         self.model.load_state_dict(self.checkpoint['net'], False)
     def ner(self,sents):
+        """
+        Args:
+            sents: list[str]
+
+        Return:
+
+        """
         result = []
         for sent in sents:
             result = []

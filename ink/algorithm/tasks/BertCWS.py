@@ -49,6 +49,13 @@ class ChineseWordSegmentation:
         self.checkpoint = torch.load(os.path.join(self.cws_path, "cws.pth"), map_location=lambda storage, loc: storage)
         self.model.load_state_dict(self.checkpoint['net'], False)
     def cws(self,sents):
+        """
+        Args:
+            sents: list[str]
+
+        Return:
+
+        """
         results = []
         for sent in sents:
 

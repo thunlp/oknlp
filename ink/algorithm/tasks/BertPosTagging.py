@@ -37,6 +37,13 @@ class PosTagging:
         return format_output(pred, mask, classlist, dims=2)
 
     def __call__(self, sents):
+        """
+        Args:
+            sents: list[str]
+
+        Return:
+            list[list]
+        """
         sents = [process_sent(' '.join(sent)).split(' ') for sent in sents]
         examples = [[sent, [0 for i in range(len(sent))]] for sent in sents]
         dataset = Dataset(examples=examples)

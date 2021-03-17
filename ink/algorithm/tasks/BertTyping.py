@@ -27,7 +27,7 @@ class Typing:
             sents: list[[str, list]], which means [[string, span]], span is [begin, end). For example,
                 [["3月15日,北方多地正遭遇近10年来强度最大、影响范围最广的沙尘暴。", [30, 33]]]
 
-        Returns:
+        Return:
             list[(str, float)], which means [(type, score)]. For example,
                 [[('object', 0.35983458161354065), ('event', 0.8602959513664246), ('attack', 0.12778696417808533), ('disease', 0.2171688675880432)]]
         """
