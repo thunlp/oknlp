@@ -29,7 +29,16 @@ def main():
                 "data/resources/*.yaml",
                 "data/resources/*.yml"
             ]
-        }
+        },
+        ext_modules=[
+            setuptools.Extension("ink._C.thulac",
+                extra_compile_args=["-O2","-Wall","-std=c++11"],
+                sources = ["csrc/thulac/thulac_cls.cc"],
+                include_dirs = [
+                    "csrc/thulac/include"
+                ],
+            )
+        ]
     )
 
 if __name__ == "__main__":

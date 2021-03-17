@@ -33,3 +33,14 @@ class TestTasks(unittest.TestCase):
                 self.assertEqual(last_end, begin)
                 last_end = end
             self.assertEqual(len(result[0]), last_end)
+
+    def test_typing(self):
+        from ink.algorithm import Typing
+        typing = Typing()
+        results = typing([["3月15日,北方多地正遭遇近10年来强度最大、影响范围最广的沙尘暴。", [30, 33]]])
+        for result in results:
+            for entity_score in result:
+                self.assertEqual(len(entity_score), 2)
+                (entity, score) = entity_score
+                self.assertIsInstance(entity, str)
+                self.assertIsInstance(score, float)
