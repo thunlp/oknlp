@@ -1,0 +1,2 @@
+
+from .thulac import THUlac

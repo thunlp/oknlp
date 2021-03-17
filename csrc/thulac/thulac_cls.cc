@@ -3,9 +3,8 @@
 #include <fstream>
 #include <Python.h>
 #include <structmember.h>
-using std::cin;
-using std::cout;
-using std::endl;
+#include<cstdarg>
+
 typedef struct {
     PyObject_HEAD // no semicolon
     THULAC *lac;
@@ -43,16 +42,14 @@ static PyObject* THUlac_cws(THUlac *self, PyObject *args, PyObject *kwds) {
     char* raw = NULL; 
     PyArg_ParseTuple(args, "s", &raw);
     THULAC_result result;
-    std::stringstream ss;
-    for(size_t i = 0; i < result.size(); ++i)
-    {
-        if(i != 0)
-        ss << " ";
-        ss << result[i].first+result[i].second;
-    }
-    std::string lac_result = ss.str();
+    self->lac->cut(raw, result);
+
+    PyObject* ret = PyList_New(result.size());
+    for (int i = 0; i < (int)result.size(); ++ i) {
+        PyList_SetItem(ret, i, Py_BuildValue("s", result[i].first.c_str()));
+    } 
     
-    return PyBytes_FromString(lac_result.data());
+    return ret;
 };
 
 static PyMemberDef THUlac_members[] = {
@@ -61,7 +58,7 @@ static PyMemberDef THUlac_members[] = {
 };
 
 static PyMethodDef THUlac_methods[] = {
-    {"THUlac_cws", (PyCFunction)THUlac_cws, METH_VARARGS,
+    {"cut", (PyCFunction)THUlac_cws, METH_VARARGS,
      "Interface for segmentation"
     },
     {NULL}  /* Sentinel */
@@ -127,7 +124,7 @@ static struct PyModuleDef lacthumodule = {
     NULL, NULL, NULL, NULL, NULL
 };
 
-PyMODINIT_FUNC PyInit_lacthu(void)
+PyMODINIT_FUNC PyInit_thulac(void)
 {
     PyObject* m;
 

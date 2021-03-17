@@ -2,7 +2,7 @@ name: models
 version: 1
 path: "models.zip"
 files:
-  - "ws_dat.bin"
+  - "cws_dat.bin"
   - "model_c_label.txt" 
   - "t2s.dat"
   - "cws_label.txt"           
