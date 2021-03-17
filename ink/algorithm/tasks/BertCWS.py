@@ -3,9 +3,10 @@ import os
 from ..preProcessor import SeqDataset
 from ink.nn.models.bertlstmcrf import BERT_LSTM
 from ink.data import  load
+from ink.config import config
 
 torch.manual_seed(2018)
-
+device = config.default_device
 def get_word(path, tag_map):
     results = []
     record = {}
@@ -63,8 +64,8 @@ class ChineseWordSegmentation:
                 out_etts = [get_word(line, self.id2tag) for line in out]
 
                 for seg in out_etts[0]:
-                    result += sent[seg['begin']:seg['end'] + 1] + ' '
-                reuslt = result[:-1]
+                    result += sent[seg['begin']:seg['end'] + 1] 
+                reuslt = result[:]
             results.append(reuslt)
         return results
 

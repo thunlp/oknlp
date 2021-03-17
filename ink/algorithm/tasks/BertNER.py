@@ -4,8 +4,9 @@ from ..preProcessor import SeqDataset
 from ink.nn.models.bertlstmcrf import BERT_LSTM
 from ink.utils.format import get_entity
 from ink.data import  load
-
+from ink.config import config
 torch.manual_seed(2018)
+device = config.default_device
 
 class NamedEntityRecognition:
     def __init__(self):

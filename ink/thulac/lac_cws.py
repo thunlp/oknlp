@@ -9,7 +9,7 @@ class CWSbyTHULAC:
         result = []
         for sent in sents:
             tmp = self.lac.THUlac_cws(sent)
-            result.append((tmp.decode('utf-8')))
+            result.append((tmp.decode('utf-8').split(' ')))
         return result
 if __name__ =='__main__':
 

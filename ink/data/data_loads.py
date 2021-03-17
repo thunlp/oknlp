@@ -14,9 +14,9 @@ logger = logging.Logger(__name__)
 
 
 
-def get_data_dir(task_name):
+def get_data_dir(task_name,idx):
     assert  len(config.path) != 0
-    source_dir = os.path.join(config.path[0], 'sources')
+    source_dir = os.path.join(config.path[idx], 'sources')
     if not os.path.exists(source_dir):
         os.makedirs(source_dir)
     download_dir = os.path.join(source_dir, task_name)
@@ -35,7 +35,11 @@ def check_file_comp(task_name,resource_dir):
 
 # download a ud models zip file
 def download_ud_model(task_name):
-    download_dir = get_data_dir(task_name)
+    download_dir = get_data_dir(task_name,0) 
+    for i in range(len(config.path)):
+        tmp_dir = get_data_dir(task_name,i) 
+        if check_file_comp(task_name,tmp_dir):
+            download_dir = tmp_dir
     if not check_file_comp(task_name,download_dir):
         logger.info('Downloading models for: '+task_name)
         model_zip_file_name = task_name+'.zip'

@@ -43,6 +43,7 @@ static PyObject* THUlac_cws(THUlac *self, PyObject *args, PyObject *kwds) {
     char* raw = NULL; 
     PyArg_ParseTuple(args, "s", &raw);
     THULAC_result result;
+    self->lac->cut(raw, result);
     std::stringstream ss;
     for(size_t i = 0; i < result.size(); ++i)
     {
