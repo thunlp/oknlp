@@ -8,7 +8,7 @@ from .model_utils import prepare_pack_padded_sequence
 
 def mask2len(mask):
     seq_lengths = torch.sum(mask, dim=1)
-    return seq_lengths
+    return seq_lengths.cpu()
 
 
 class BILSTM(nn.Module):

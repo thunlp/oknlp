@@ -58,7 +58,7 @@ class NamedEntityRecognition:
     
     def to(self, device):
         self.device = device
-        self.model.set_device(device)
+        self.model.to(device)
 
     def ner(self,sents):
         result = []

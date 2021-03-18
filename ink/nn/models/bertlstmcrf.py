@@ -40,8 +40,9 @@ class BertLSTMCRF(nn.Module):
         _, out = self.uplayer(logits, mask, task)
         return out
 
-    def set_device(self, device):
+    def to(self, device):
+        super().to(device)
         self.bert_encoder = self.bert_encoder.to(device)
         self.lstm = self.lstm.to(device)
-        self.decoder.set_device(device)
-        self.uplayer.set_device(device)
+        self.decoder.to(device)
+        self.uplayer.to(device)
