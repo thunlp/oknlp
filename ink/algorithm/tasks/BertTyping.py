@@ -28,7 +28,7 @@ class Typing:
         text = self.tokenizer.tokenize(text)
         pos = text.index('[ENL]')
         text = self.tokenizer.convert_tokens_to_ids(text)
-        text = torch.Tensor([text])
+        text = torch.LongTensor([text])
         return text, pos
 
     def __call__(self, sents: list) -> list:

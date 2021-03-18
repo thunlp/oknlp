@@ -1,7 +1,6 @@
 import os
 import re
 import torch
-import numpy as np
 from .pre_processor import GeneralTransformer
 
 def sequence_mask(sequence_length, max_len=80, device=None, padding=True):  # sequence_length :(batch_size, )

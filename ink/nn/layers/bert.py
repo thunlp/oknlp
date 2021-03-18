@@ -1,5 +1,6 @@
 import torch.nn as nn
-from transformers import BertModel, BertTokenizer
+from transformers import AutoModel, AutoConfig
+from transformers import BertTokenizer as TransformerBertTokenizer
 
 
 class BertEncoder(nn.Module):
@@ -7,7 +8,7 @@ class BertEncoder(nn.Module):
                  bert_route='bert-base-chinese'
                  ):
         super().__init__()
-        self.encoder = BertModel.from_pretrained(bert_route)
+        self.encoder = AutoModel.from_config(AutoConfig.from_pretrained(bert_route))
         self.out_dim = self.encoder.config.hidden_size
 
     def forward(self, inputs, mask):
@@ -17,7 +18,7 @@ class BertEncoder(nn.Module):
 
 class BertTokenizer:
     def __init__(self, version='bert-base-chinese'):
-        self.tokenizer = BertTokenizer.from_pretrained(version)
+        self.tokenizer = TransformerBertTokenizer.from_pretrained(version)
 
     def __call__(self, text):
         return self.tokenizer.tokenize(text)
@@ -29,7 +30,7 @@ class BertTokenizer:
 class Bert(nn.Module):
     def __init__(self, version='bert-base-chinese'):
         super().__init__()
-        self.bert = BertModel.from_pretrained(version).train()  # default is eval()
+        self.bert = AutoModel.from_config(AutoConfig.from_pretrained(version))
 
     def frozen(self, bool):
         bool = not bool

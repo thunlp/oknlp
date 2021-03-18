@@ -1,12 +1,12 @@
 import torch.nn as nn
-from transformers import BertModel
+from transformers import AutoConfig, AutoModel
 
 
 class BertLinearSigmoid(nn.Module):
     def __init__(self):
         super().__init__()
-
-        self.bert = BertModel.from_pretrained('bert-base-multilingual-cased')
+         
+        self.bert = AutoModel.from_config(AutoConfig.from_pretrained("bert-base-multilingual-cased"))
         self.predict = nn.Linear(768, 130)
         self.sig = nn.Sigmoid()
 
