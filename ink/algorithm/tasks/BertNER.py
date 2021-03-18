@@ -62,7 +62,7 @@ class NamedEntityRecognition:
         return self
 
     def ner(self,sents):
-        result = []
+        results = []
         for sent in sents:
             result = []
             test_pkg = {'token': sent, 'tag': ' '.join(['O'] * len(sent))}
@@ -73,5 +73,6 @@ class NamedEntityRecognition:
                 out = out.cpu().tolist()
                 out_etts = [get_entity(line, self.id2tag) for line in out]
                 result.append(out_etts)
-        return result
+            results.append(result)
+        return results
 
