@@ -1,8 +1,9 @@
 import torch.nn as nn
-from ink.nn.layers.bilstm import BILSTM
-from ink.nn.layers.bert import Bert_Encoder
-from ink.nn.layers.mlp import MultiDecoder
-from ink.nn.layers.crf import CRF
+from ..layers.bilstm import BILSTM
+from ..layers.bert import BertEncoder
+from ..layers.mlp import MultiDecoder
+from ..layers.crf import CRF
+
 
 
 def batchify_with_label(inputs, outputs=None):
@@ -11,11 +12,11 @@ def batchify_with_label(inputs, outputs=None):
     return resize_inputs
 
 
-class BERT_LSTM(nn.Module):
+class BertLSTMCRF(nn.Module):
     def __init__(self, input_size, hidden_size, label_sizes, toplayer='CRF', bert_route='bert-base-chinese'):
         super().__init__()
 
-        self.bert_encoder = Bert_Encoder()
+        self.bert_encoder = BertEncoder()
         # also input dim of LSTM
         self.bert_out_dim = self.bert_encoder.out_dim
         # LSTM layer

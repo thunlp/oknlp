@@ -2,28 +2,33 @@ import os
 import torch
 import torch.utils.data as Data
 from torch import nn
-from ink.nn.models.bertlinear import BertLinear
-from ink.data import load
+from ...nn.models import BertLinear
+from ...data import load
+from ...config import config
 from ..preProcessor.bertPosTagging import Dataset, classlist
 from ..preProcessor.bertPosTagging.apply_text_norm import process_sent
 from ..preProcessor.bertPosTagging.evaluate_funcs import format_output
 
 
 class PosTagging:
-    def __init__(self):
-        self.prepare_model()
-
-    def prepare_model(self):
-        self.model = nn.DataParallel(BertLinear(classlist))
+    def __init__(self, device=None):
+        self.model = BertLinear(classlist)
         path = load('pos')
         checkpoint = torch.load(os.path.join(path, "params.ckpt"), map_location=lambda storage, loc: storage)
-        self.model.module.load_state_dict(checkpoint)
+        self.model.load_state_dict(checkpoint)
         self.model.eval()
+
+        if device is None:
+            device = config.default_device
+        self.to(device)
+
+    def to(self, device):
+        self.device = device
+        self.model = self.model.to(device)
 
     def infer_step(self, batch):
         x, at, y = batch
-        if torch.cuda.is_available():
-            x, at, y = x.cuda(), at.cuda(), y.cuda()
+        x, at, y = x.to(self.device), at.to(self.device), y.to(self.device)
         with torch.no_grad():
             p = self.model(x, at)
             return p.cpu().tolist(), (y != -1).long().cpu().tolist()

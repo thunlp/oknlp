@@ -1,10 +1,9 @@
 import torch
 import os
 from ..preProcessor import SeqDataset
-from ink.nn.models.bertlstmcrf import BERT_LSTM
-from ink.data import  load
-
-torch.manual_seed(2018)
+from ...nn.models import BertLSTMCRF
+from ...data import  load
+from ...config import config
 
 def get_word(path, tag_map):
     results = []
@@ -36,10 +35,10 @@ def get_word(path, tag_map):
     return results
 
 class ChineseWordSegmentation:
-    def __init__(self):
+    def __init__(self, device=None):
         self.cws_path = load('cws')
         self.basic_path = load('basic')
-        self.model = BERT_LSTM(input_size=300, hidden_size=200, label_sizes=[3], toplayer='CRF')
+        self.model = BertLSTMCRF(input_size=300, hidden_size=200, label_sizes=[3], toplayer='CRF')
         self.seq = SeqDataset( embedding_path=os.path.join(self.basic_path, 'sgns300'),
                          vocab_path=os.path.join(self.basic_path, 'vocab.pkl'),
                          tag_path=os.path.join(self.cws_path, 'tagset_cws.txt'),
@@ -48,6 +47,16 @@ class ChineseWordSegmentation:
         self.id2tag = self.seq.tagging()
         self.checkpoint = torch.load(os.path.join(self.cws_path, "cws.pth"), map_location=lambda storage, loc: storage)
         self.model.load_state_dict(self.checkpoint['net'], False)
+        self.model.eval()
+
+        if device is None:
+            device = config.default_device
+        self.to(device)
+    
+    def to(self, device):
+        self.device = device
+        self.model = self.model.to(device)
+    
     def cws(self,sents):
         results = []
         for sent in sents:
@@ -58,8 +67,8 @@ class ChineseWordSegmentation:
             result = ''
 
             with torch.no_grad():
-                out = self.model.predict(3, tokens, mask)
-                out = out.numpy().tolist()
+                out = self.model.predict(3, tokens.to(self.device), mask.to(self.device))
+                out = out.cpu().tolist()
                 out_etts = [get_word(line, self.id2tag) for line in out]
 
                 for seg in out_etts[0]:

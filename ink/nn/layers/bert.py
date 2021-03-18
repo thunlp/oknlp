@@ -2,7 +2,7 @@ import torch.nn as nn
 from transformers import BertModel, BertTokenizer
 
 
-class Bert_Encoder(nn.Module):
+class BertEncoder(nn.Module):
     def __init__(self,
                  bert_route='bert-base-chinese'
                  ):
@@ -15,7 +15,7 @@ class Bert_Encoder(nn.Module):
         return self.encoder(inputs, mask)
 
 
-class Bert_Tokenizer:
+class BertTokenizer:
     def __init__(self, version='bert-base-chinese'):
         self.tokenizer = BertTokenizer.from_pretrained(version)
 
