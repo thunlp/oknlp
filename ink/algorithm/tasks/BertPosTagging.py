@@ -25,6 +25,7 @@ class PosTagging:
     def to(self, device):
         self.device = device
         self.model = self.model.to(device)
+        return self
 
     def infer_step(self, batch):
         x, at, y = batch

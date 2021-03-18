@@ -46,3 +46,4 @@ class BertLSTMCRF(nn.Module):
         self.lstm = self.lstm.to(device)
         self.decoder.to(device)
         self.uplayer.to(device)
+        return self

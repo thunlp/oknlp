@@ -56,6 +56,7 @@ class ChineseWordSegmentation:
     def to(self, device):
         self.device = device
         self.model = self.model.to(device)
+        return self
     
     def cws(self,sents):
         results = []

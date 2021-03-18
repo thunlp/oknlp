@@ -20,6 +20,7 @@ class MultiDecoder(nn.Module):
         super().to(device)
         for size in self.mlp.keys():
             self.mlp[size] = self.mlp[size].to(device)
+        return self
 
 
 class MLP(nn.Module):

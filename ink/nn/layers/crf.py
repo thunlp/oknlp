@@ -27,7 +27,7 @@ class CRF(nn.Module):
         super().__init__()
 
         # Matrix of transition parameters.  Entry i,j is the score of transitioning from i to j.
-        self.trans_mats = nn.ModuleDict()
+        self.trans_mats = {}
         self.device = 'cpu'
         for num in tagset_size:
             init_transitions = torch.zeros(num + 2, num + 2)
@@ -257,3 +257,4 @@ class CRF(nn.Module):
         self.device = device
         for num in self.trans_mats:
             self.trans_mats[num] = self.trans_mats[num].to(self.device)
+        return self

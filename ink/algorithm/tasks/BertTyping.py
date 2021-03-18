@@ -23,6 +23,7 @@ class Typing:
     def to(self, device):
         self.device = device
         self.model = self.model.to(device)
+        return self
 
     def get_input(self, text: str):
         text = self.tokenizer.tokenize(text)
