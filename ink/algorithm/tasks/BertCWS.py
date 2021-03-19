@@ -46,7 +46,7 @@ class ChineseWordSegmentation:
 
         self.id2tag = self.seq.tagging()
         self.checkpoint = torch.load(os.path.join(self.cws_path, "cws.pth"), map_location=lambda storage, loc: storage)
-        self.model.load_state_dict(self.checkpoint['net'], False)
+        self.model.load_state_dict(self.checkpoint['net'])
         self.model.eval()
 
         if device is None:
@@ -65,7 +65,7 @@ class ChineseWordSegmentation:
             test_pkg = {'token': sent, 'tag': ' '.join(['0'] * len(sent))}
             tokens, tags, mask = self.seq.transformer.item2id(test_pkg)
             tokens = torch.LongTensor([tokens])
-            result = ''
+            result = []
 
             with torch.no_grad():
                 out = self.model.predict(3, tokens.to(self.device), mask.to(self.device))
@@ -73,8 +73,7 @@ class ChineseWordSegmentation:
                 out_etts = [get_word(line, self.id2tag) for line in out]
 
                 for seg in out_etts[0]:
-                    result += sent[seg['begin']:seg['end'] + 1] + ' '
-                reuslt = result[:-1]
-            results.append(reuslt)
+                    result.append(sent[seg['begin']:seg['end'] + 1])
+            results.append(result)
         return results
 

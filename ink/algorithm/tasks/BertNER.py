@@ -49,7 +49,7 @@ class NamedEntityRecognition:
                          bert_tokenizer='bert-base-chinese')
         self.id2tag = self.seq.tagging()
         self.checkpoint = torch.load(os.path.join(self.ner_path, "bert2.pth"), map_location=lambda storage, loc: storage)
-        self.model.load_state_dict(self.checkpoint['net'], False)
+        self.model.load_state_dict(self.checkpoint['net'])
         self.model.eval()
 
         if device is None:
@@ -64,15 +64,13 @@ class NamedEntityRecognition:
     def ner(self,sents):
         results = []
         for sent in sents:
-            result = []
             test_pkg = {'token': sent, 'tag': ' '.join(['O'] * len(sent))}
             tokens, tags, masks = self.seq.transformer.item2id(test_pkg)
             tokens = torch.LongTensor([tokens])
             with torch.no_grad():
                 out = self.model.predict(8, tokens.to(self.device), masks.to(self.device))
-                out = out.cpu().tolist()
-                out_etts = [get_entity(line, self.id2tag) for line in out]
-                result.append(out_etts)
-            results.append(result)
+                out = out.cpu().tolist()[0]
+                out_etts = get_entity(out, self.id2tag)
+            results.append(out_etts)
         return results
 
