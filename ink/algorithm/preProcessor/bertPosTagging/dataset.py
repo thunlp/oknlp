@@ -1,5 +1,5 @@
 import torch.utils.data as Data
-from ink.nn.layers.bert import Bert_Tokenizer
+from ....nn.layers.bert import BertTokenizer
 import torch
 
 
@@ -28,7 +28,7 @@ class Dataset(Data.Dataset):
             self.attn.append(attn)
             self.label.append(label)
 
-        self.tokenizer = Bert_Tokenizer()
+        self.tokenizer = BertTokenizer()
 
     def __len__(self):
         return len(self.examples)

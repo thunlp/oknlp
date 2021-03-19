@@ -11,44 +11,12 @@ def convert_pos_to_mask(e_pos, max_len=128):
     return e_pos_mask
 
 class RelDataset:
-    def __init__(self,vocab_path, embedding_path, rel_path, bert_tokenizer=None, max_sentence_length=80,
-                 dir_name_given=None):
+    def __init__(self,vocab_path, embedding_path, rel_path, bert_tokenizer=None, max_sentence_length=80):
         self.tokens, self.rels, self.lengths, self.masks = [], [], [], []
         # translation
-        self.dir_name_given = dir_name_given
         self.bert_tokenizer = bert_tokenizer
         self.transformer = RelTransformer(vocab_path, embedding_path, rel_path, bert_tokenizer=bert_tokenizer,
                                               max_sentence_length=80)
-
-
-    def save(self):
-
-        if (self.bert_tokenizer is not None):
-            dir_name = "RelCached(BERT)"
-        else:
-            dir_name = "RelCached"
-        if (self.dir_name_given is not None):
-            dir_name = self.dir_name_given
-        try:
-            os.mkdir(dir_name)
-        except:
-            pass
-        np.save(os.path.join(dir_name, "tokens.npy"), self.tokens)
-        np.save(os.path.join(dir_name, "relations.npy"), self.rels)
-        np.save(os.path.join(dir_name, "masks.npy"), self.masks)
-
-    def load(self):
-
-        if (self.bert_tokenizer is not None):
-            dir_name = "RelCached(BERT)"
-        else:
-            dir_name = "RelCached"
-        if (self.dir_name_given is not None):
-            dir_name = self.dir_name_given
-        self.tokens = np.load(os.path.join(dir_name, "tokens.npy"))
-        self.rels = np.load(os.path.join(dir_name, "relations.npy"))
-        self.masks = np.load(os.apth.join(dir_name, "masks.npy"))
-
     def __getitem__(self, index):
         return (self.tokens[index], self.rels[index], self.masks[index])
 

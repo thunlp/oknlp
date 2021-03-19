@@ -16,9 +16,11 @@ class MultiDecoder(nn.Module):
     def forward(self, x, outsz):
         return self.mlp[outsz](x)
 
-    def set_device(self, device):
+    def to(self, device):
+        super().to(device)
         for size in self.mlp.keys():
             self.mlp[size] = self.mlp[size].to(device)
+        return self
 
 
 class MLP(nn.Module):

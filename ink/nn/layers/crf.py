@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function
 import torch
 import torch.autograd as autograd
 import torch.nn as nn
@@ -254,7 +252,9 @@ class CRF(nn.Module):
         # exit(0)
         return forward_score - gold_score
 
-    def set_device(self, device):
+    def to(self, device):
+        super().to(device)
         self.device = device
         for num in self.trans_mats:
             self.trans_mats[num] = self.trans_mats[num].to(self.device)
+        return self

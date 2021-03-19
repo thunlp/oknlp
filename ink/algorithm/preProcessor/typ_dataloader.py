@@ -19,42 +19,12 @@ def multilb(shape, input):
 
 
 class TypDataset:
-    def __init__(self, file_path, vocab_path, embedding_path, type_path, bert_tokenizer=None, max_sentence_length=80,
-                 dir_name_given=None):
+    def __init__(self, file_path, vocab_path, embedding_path, type_path, bert_tokenizer=None, max_sentence_length=80):
         self.tokens, self.types, self.lengths, self.masks = [], [], [], []
         # translation
-        self.dir_name_given = dir_name_given
         self.bert_tokenizer = bert_tokenizer
         self.transformer = TypTransformer(vocab_path, embedding_path, type_path, bert_tokenizer=bert_tokenizer,
                                               max_sentence_length=80)
-
-    def save(self):
-
-        if (self.bert_tokenizer is not None):
-            dir_name = "TypCached(BERT)"
-        else:
-            dir_name = "TypCached"
-        if (self.dir_name_given is not None):
-            dir_name = self.dir_name_given
-        try:
-            os.mkdir(dir_name)
-        except:
-            pass
-        np.save(os.path.join(dir_name, "tokens.npy"), self.tokens)
-        np.save(os.path.join(dir_name, "types.npy"), self.types)
-        np.save(os.path.join(dir_name, "masks.npy"), self.masks)
-
-    def load(self):
-
-        if (self.bert_tokenizer is not None):
-            dir_name = "TypCached(BERT)"
-        else:
-            dir_name = "TypCached"
-        if (self.dir_name_given is not None):
-            dir_name = self.dir_name_given
-        self.tokens = np.load(os.path.join(dir_name, "tokens.npy"))
-        self.types = np.load(os.path.join(dir_name, "types.npy"))
-        self.masks = np.load(os.path.join(dir_name, "masks.npy"))
 
     def __getitem__(self, index):
         return (self.tokens[index], self.types[index], self.masks[index])
