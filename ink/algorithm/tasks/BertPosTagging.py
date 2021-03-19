@@ -46,5 +46,5 @@ class PosTagging:
         sents = [process_sent(' '.join(sent)).split(' ') for sent in sents]
         examples = [[sent, [0 for i in range(len(sent))]] for sent in sents]
         dataset = Dataset(examples=examples)
-        res = self.infer_epoch(Data.DataLoader(dataset, batch_size=4, num_workers=4))
+        res = self.infer_epoch(Data.DataLoader(dataset, batch_size=4, num_workers=0))
         return res

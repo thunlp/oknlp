@@ -37,16 +37,14 @@ def get_word(path, tag_map):
 class ChineseWordSegmentation:
     def __init__(self, device=None):
         self.cws_path = load('cws')
-        self.basic_path = load('basic')
         self.model = BertLSTMCRF(input_size=300, hidden_size=200, label_sizes=[3], toplayer='CRF')
-        self.seq = SeqDataset( embedding_path=os.path.join(self.basic_path, 'sgns300'),
-                         vocab_path=os.path.join(self.basic_path, 'vocab.pkl'),
-                         tag_path=os.path.join(self.cws_path, 'tagset_cws.txt'),
-                         bert_tokenizer='bert-base-chinese')
+        self.seq = SeqDataset(
+            tag_path=os.path.join(self.cws_path, 'tagset_cws.txt'),
+            bert_tokenizer='bert-base-chinese')
 
         self.id2tag = self.seq.tagging()
         self.checkpoint = torch.load(os.path.join(self.cws_path, "cws.pth"), map_location=lambda storage, loc: storage)
-        self.model.load_state_dict(self.checkpoint['net'])
+        self.model.load_state_dict(self.checkpoint['net'], False)
         self.model.eval()
 
         if device is None:

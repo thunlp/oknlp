@@ -3,4 +3,3 @@ PyYaml
 requests
 tqdm
 transformers
-numpy
