@@ -10,10 +10,10 @@ class TestDataManager(unittest.TestCase):
     
     def tearDown(self) -> None:
         shutil.rmtree(DATA_DIR)
+
     
     def test_load(self):
-        from ink.config import config
-        from ink.data import load
+        from ink import load, config
 
         old = config.path
         config.path = [ DATA_DIR ]
@@ -24,6 +24,23 @@ class TestDataManager(unittest.TestCase):
         
         with self.assertRaises(ValueError):
             load("unknown")
+    
+    def test_loadpath(self):
+        from ink import load, config
+        old = config.path
+
+        config.path = [os.path.join(DATA_DIR, "path1")]
+        v = load("test")
+        self.assertEqual(open(os.path.join(v, "test.txt"), "r").read(), "test")
+
+        config.path = [os.path.join(DATA_DIR, "path2"), "asdasd", "/bbbb", os.path.join(DATA_DIR, "path1"), "?????"]
+        vv = load("test")
+        self.assertEqual( vv, v )
+        self.assertEqual(open(os.path.join(vv, "test.txt"), "r").read(), "test")
+        self.assertTrue(not os.path.exists(os.path.join(DATA_DIR, "sources", "test")) )
+
+        config.path = old
+
     
 
 
