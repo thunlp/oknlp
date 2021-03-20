@@ -11,4 +11,4 @@ CWS
     cws = ChineseWordSegmentation()
     sents = ['我爱北京天安门']
     result = cws(sents)
-
+    # result == ['我 爱 北京 天安门']
