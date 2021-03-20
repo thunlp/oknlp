@@ -1,9 +1,8 @@
-from . import classlist
+from .class_list import classlist
 
 
 def extract_entities(labels_lst, start_label="1_4"):
     def gen_entities(label_lst, start_label="1", dims=1):
-        # rules -> if end_mark > start_label
         entities = dict()
 
         if "_" in start_label:

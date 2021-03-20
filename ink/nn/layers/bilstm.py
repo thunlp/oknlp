@@ -8,7 +8,7 @@ from .model_utils import prepare_pack_padded_sequence
 
 def mask2len(mask):
     seq_lengths = torch.sum(mask, dim=1)
-    return seq_lengths
+    return seq_lengths.cpu()
 
 
 class BILSTM(nn.Module):
@@ -28,7 +28,7 @@ class BILSTM(nn.Module):
                             hidden_size=hidden_size,
                             num_layers=num_layer,
                             batch_first=True,
-                            dropout=dropout_p,
+                            dropout=dropout_p if num_layer > 1 else 0,
                             bidirectional=bi_tag)
 
     def forward(self, inputs, mask):

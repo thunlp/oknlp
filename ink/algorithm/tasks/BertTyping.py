@@ -2,23 +2,34 @@ import os
 import torch
 import json
 from transformers import BertTokenizer
-from ink.nn.models.bertlinearsigmoid import BertLinearSigmoid
-from ink.data import load
+from ...nn.models import BertLinearSigmoid
+from ...data import load
+from ...config import config
 
 
 class Typing:
-    def __init__(self):
+    def __init__(self, device=None):
         typ_path = load('typ')
         self.tokenizer = BertTokenizer.from_pretrained(os.path.join(typ_path, 'vocab.txt'), additional_special_tokens=['[ENL]', '[ENR]'])
         self.types = json.loads(open(os.path.join(typ_path, 'types.json'), 'r').read())
         self.model = BertLinearSigmoid()
         self.model.load_state_dict(torch.load(os.path.join(typ_path, 'typing.pth'), map_location=lambda storage, loc: storage))
+        self.model.eval()
+
+        if device is None:
+            device = config.default_device
+        self.to(device)
+    
+    def to(self, device):
+        self.device = device
+        self.model = self.model.to(device)
+        return self
 
     def get_input(self, text: str):
         text = self.tokenizer.tokenize(text)
         pos = text.index('[ENL]')
         text = self.tokenizer.convert_tokens_to_ids(text)
-        text = torch.tensor([text])
+        text = torch.LongTensor([text])
         return text, pos
 
     def __call__(self, sents: list) -> list:
@@ -35,8 +46,9 @@ class Typing:
         for (text, span) in sents:
             text = text[:span[0]] + '[ENL]' + text[span[0]: span[1]] + '[ENR]' + text[span[1]:]
             text, pos = self.get_input(text)
-            out = self.model(text, pos)
-            out = out.tolist()
+            with torch.no_grad():
+                out = self.model(text.to(self.device), pos)
+                out = out.cpu().tolist()
             result = []
             for i, score in enumerate(out):
                 if score > 0.1:

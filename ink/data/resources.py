@@ -4,7 +4,6 @@ from typing import List
 
 RESOURCES_MAP = {}
 
-
 def generate_filelist(obj, prefix="") -> List[str]:
     if not isinstance(obj, list):
         raise ValueError("Parse config file failed", obj)
