@@ -41,15 +41,13 @@ def get_entity(path, tag_map):
 class NamedEntityRecognition:
     def __init__(self, device=None):
         self.ner_path = load('ner')
-        self.basic_path = load('basic')
         self.model = BertLSTMCRF(input_size=300, hidden_size=200, label_sizes=[8], toplayer='CRF')
-        self.seq = SeqDataset( embedding_path=os.path.join(self.basic_path, 'sgns300'),
-                         vocab_path=os.path.join(self.basic_path, 'vocab.pkl'),
+        self.seq = SeqDataset(
                          tag_path=os.path.join(self.ner_path, 'tagset.txt'),
                          bert_tokenizer='bert-base-chinese')
         self.id2tag = self.seq.tagging()
         self.checkpoint = torch.load(os.path.join(self.ner_path, "bert2.pth"), map_location=lambda storage, loc: storage)
-        self.model.load_state_dict(self.checkpoint['net'])
+        self.model.load_state_dict(self.checkpoint['net'], False)
         self.model.eval()
 
         if device is None:
