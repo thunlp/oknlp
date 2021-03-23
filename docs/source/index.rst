@@ -29,10 +29,10 @@ Welcome to Ink's documentation!
    :hidden:
    :caption: API Reference
 
-   CWS <api/cws.rst>
-   PosTagging <api/postagging.rst>
-   NER <api/ner.rst>
-   Typing <api/typing.rst>
+   cws <api/cws.rst>
+   ner <api/ner.rst>
+   postagging <api/postagging.rst>
+   typing <api/typing.rst>
 
 .. toctree::
    :maxdepth: 1

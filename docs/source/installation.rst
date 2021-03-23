@@ -16,17 +16,3 @@
     git clone https://github.com/PLNUHT/ink.git
     cd ink
     python setup.py install
-
-
-Requirements
------------------------------
-
-These requirements will be automatically installed during running `python setup.py install`.
-
-* **torch**
-* **PyYaml**
-* **requests**
-* **tqdm**
-* **transformers**
-* **numpy**
-
