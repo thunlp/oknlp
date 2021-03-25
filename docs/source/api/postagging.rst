@@ -1,8 +1,10 @@
 PosTagging
 ===========
 
-.. autoclass:: ink.algorithm.postagging.BertPosTagging
+.. autoclass:: ink.algorithm.postagging.BasePosTagging.BasePosTagging
     :members: __call__
+
+.. autoclass:: ink.algorithm.postagging.BertPosTagging
 
 .. autofunction:: ink.algorithm.postagging.get_pos_tagging
 

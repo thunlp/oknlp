@@ -2,12 +2,12 @@ import os
 import torch
 import json
 from transformers import BertTokenizer
+from ..BaseTyping import BaseTyping
 from ....nn.models import BertLinearSigmoid
 from ....data import load
-from ...BasicAlgorithm import BasicAlgorithm
 
 
-class BertTyping(BasicAlgorithm):
+class BertTyping(BaseTyping):
     def __init__(self, device=None):
         typ_path = load('typ')
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')
@@ -23,18 +23,7 @@ class BertTyping(BasicAlgorithm):
         self.model = self.model.to(device)
         return super().to(device)
 
-    def __call__(self, sents: list) -> list:
-        """
-        Args:
-            sents: list[[str, list]]
-                对于每一个输入，第一个参数是上下文字符串，第二个参数是实体的提及位置[begin, end)，例如，
-                [["3月15日,北方多地正遭遇近10年来强度最大、影响范围最广的沙尘暴。", [30, 33]]]
-
-        Returns:
-            list[(str, float)]
-                对每一个输入，输出所有可能的类型及对应的分数，例如，
-                [[('object', 0.35983458161354065), ('event', 0.8602959513664246), ('attack', 0.12778696417808533), ('disease', 0.2171688675880432)]]
-        """
+    def __call__(self, sents: list[list[str, list]]) -> list[list[tuple[str, float]]]:
         results = []
         for [text, span] in sents:
             text = text[:span[0]] + '<ent>' + text[span[0]: span[1]] + '</ents>' + text[span[1]:]

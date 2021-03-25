@@ -1,12 +1,12 @@
 import torch
 import os
+from ..BaseNER import BaseNER
 from ....utils.seq_dataloader import SeqDataset
 from ....nn.models import BertLSTMCRF
 from ....data import load
-from ...BasicAlgorithm import BasicAlgorithm
 
 
-class BertNER(BasicAlgorithm):
+class BertNER(BaseNER):
     def __init__(self, device=None):
         self.ner_path = load('ner')
         self.model = BertLSTMCRF(input_size=300, hidden_size=200, label_sizes=[8], toplayer='CRF')
@@ -24,14 +24,6 @@ class BertNER(BasicAlgorithm):
         return super().to(device)
 
     def __call__(self, sents: list) -> list:
-        """
-        Args:
-            sents: list[str]
-                表示需要进行命名实体识别的字符串列表，例如，['今天天气真好']
-
-        Returns:
-            ??
-        """
         results = []
         for sent in sents:
             test_pkg = {'token': sent, 'tag': ' '.join(['O'] * len(sent))}

@@ -7,7 +7,7 @@
 词性标注( :code:`postagging` )、
 细粒度实体分类( :code:`typing`)
 等算法模块，模块中包含使用不同算法的具体算法类，你可以实例化出对应的类对象，
-并调用其 :code:`__call__(self, sents: list[str])` 函数，获取对应的输出。
+并调用其 :code:`__call__(self, sents: list)` 函数，获取对应的输出。
 
 各算法类的具体接口可以参考API部分的对应文档。
 

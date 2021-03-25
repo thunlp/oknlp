@@ -1,12 +1,12 @@
 import torch
 import os
+from ..BaseCWS import BaseCWS
 from ....utils.seq_dataloader import SeqDataset
 from ....nn.models import BertLSTMCRF
 from ....data import load
-from ...BasicAlgorithm import BasicAlgorithm
 
 
-class BertCWS(BasicAlgorithm):
+class BertCWS(BaseCWS):
     def __init__(self, device=None):
         self.cws_path = load('cws')
         self.model = BertLSTMCRF(input_size=300, hidden_size=200, label_sizes=[3], toplayer='CRF')
@@ -24,15 +24,7 @@ class BertCWS(BasicAlgorithm):
         self.model = self.model.to(device)
         return super().to(device)
 
-    def __call__(self, sents: list) -> list:
-        """
-        Args:
-            sents: list[str]
-                表示需要进行分词的字符串列表，例如，['今天天气真好']
-
-        Returns:
-            ??
-        """
+    def __call__(self, sents: list[str]) -> list[str]:
         results = []
         for sent in sents:
             test_pkg = {'token': sent, 'tag': ' '.join(['0'] * len(sent))}

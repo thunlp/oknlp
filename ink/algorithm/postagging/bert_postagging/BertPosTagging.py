@@ -3,14 +3,14 @@ import torch
 import torch.utils.data as Data
 from ....nn.models import BertLinear
 from ....data import load
-from ...BasicAlgorithm import BasicAlgorithm
+from ...BaseAlgorithm import BaseAlgorithm
 from .dataset import Dataset
 from .class_list import classlist
 from .apply_text_norm import process_sent
 from .evaluate_funcs import format_output
 
 
-class BertPosTagging(BasicAlgorithm):
+class BertPosTagging(BaseAlgorithm):
     def __init__(self, device=None):
         pos_path = load('pos')
         self.model = BertLinear(classlist)
@@ -23,7 +23,7 @@ class BertPosTagging(BasicAlgorithm):
         self.model = self.model.to(device)
         return super().to(device)
 
-    def __call__(self, sents: list) -> list:
+    def __call__(self, sents: list[str]) -> list[list[tuple[str]]]:
         """
         Args:
             sents: list[str]
