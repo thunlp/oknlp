@@ -23,7 +23,7 @@ class BertTyping(BaseTyping):
         self.model = self.model.to(device)
         return super().to(device)
 
-    def __call__(self, sents: list[list[str, list]]) -> list[list[tuple[str, float]]]:
+    def __call__(self, sents):
         results = []
         for [text, span] in sents:
             text = text[:span[0]] + '<ent>' + text[span[0]: span[1]] + '</ents>' + text[span[1]:]

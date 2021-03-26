@@ -1,3 +1,4 @@
+from typing import List, Tuple
 from ..BaseAlgorithm import BaseAlgorithm
 
 
@@ -12,15 +13,15 @@ class BaseTyping(BaseAlgorithm):
     def to(self, device: str):
         return super().to(device)
 
-    def __call__(self, sents: list[list[str, list]]) -> list[list[tuple[str, float]]]:
+    def __call__(self, sents: List[Tuple[str, list]]) -> List[List[Tuple[str, float]]]:
         """
         Args:
-            sents: list[list[str, list]]
-                每一个输入都是一个[str, list]列表，第一个参数是上下文字符串，第二个参数是实体的提及位置[begin, end)，例如，
-                [["3月15日,北方多地正遭遇近10年来强度最大、影响范围最广的沙尘暴。", [30, 33]]]
+            sents: List[Tuple[str, list]]
+                每一个输入都是一个[str, list]元组，第一个参数是上下文字符串，第二个参数是实体的提及位置[begin, end)，例如，
+                [("3月15日,北方多地正遭遇近10年来强度最大、影响范围最广的沙尘暴。", [30, 33])]
 
         Returns:
-            list[list[tuple[str, float]]]
+            List[List[Tuple[str, float]]]
                 对每一个输入，输出所有可能的类型及对应的分数，例如，
                 [[('object', 0.35983458161354065), ('event', 0.8602959513664246), ('attack', 0.12778696417808533), ('disease', 0.2171688675880432)]]
         """

@@ -24,7 +24,7 @@ class BertCWS(BaseCWS):
         self.model = self.model.to(device)
         return super().to(device)
 
-    def __call__(self, sents: list[str]) -> list[str]:
+    def __call__(self, sents):
         results = []
         for sent in sents:
             test_pkg = {'token': sent, 'tag': ' '.join(['0'] * len(sent))}

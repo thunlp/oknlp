@@ -7,5 +7,5 @@ class THUlacCWS(BaseAlgorithm):
         self.model = THUlac()
         super().__init__(device)
 
-    def __call__(self, sents: list[str]) -> list[str]:
+    def __call__(self, sents):
         return [self.model.cws(sent) for sent in sents]

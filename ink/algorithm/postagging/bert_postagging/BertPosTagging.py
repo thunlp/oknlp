@@ -23,17 +23,7 @@ class BertPosTagging(BaseAlgorithm):
         self.model = self.model.to(device)
         return super().to(device)
 
-    def __call__(self, sents: list[str]) -> list[list[tuple[str]]]:
-        """
-        Args:
-            sents: list[str]
-                表示需要进行词性标注的字符串列表，例如，['今天天气真好']
-
-        Return:
-            list[list[tuple]]
-                对于每一个输入，输出分词后每个词对应的词性标注[(词语, 词性),]
-                例如，[[('今天', 'NT'), ('天气', 'NN'), ('真', 'AD'), ('好', 'VA')]]
-        """
+    def __call__(self, sents):
         processed_sents = [process_sent(' '.join(sent)).split(' ') for sent in sents]
         examples = [[sent, [0 for i in range(len(sent))]] for sent in processed_sents]
         dataset = Dataset(examples=examples)

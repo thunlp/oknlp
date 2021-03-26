@@ -1,3 +1,4 @@
+from typing import List
 from ..BaseAlgorithm import BaseAlgorithm
 
 
@@ -12,10 +13,10 @@ class BaseNER(BaseAlgorithm):
     def to(self, device: str):
         return super().to(device)
 
-    def __call__(self, sents: list[str]) -> list[str]:
+    def __call__(self, sents: List[str]) -> List[str]:
         """
         Args:
-            sents: list[str]
+            sents: List[str]
                 表示需要进行命名实体分类的字符串列表
 
         Returns:

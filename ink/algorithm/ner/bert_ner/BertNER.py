@@ -23,7 +23,7 @@ class BertNER(BaseNER):
         self.model.to(device)
         return super().to(device)
 
-    def __call__(self, sents: list) -> list:
+    def __call__(self, sents):
         results = []
         for sent in sents:
             test_pkg = {'token': sent, 'tag': ' '.join(['O'] * len(sent))}
