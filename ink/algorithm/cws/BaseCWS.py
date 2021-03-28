@@ -13,14 +13,14 @@ class BaseCWS(BaseAlgorithm):
     def to(self, device: str):
         return super().to(device)
 
-    def __call__(self, sents: List[str]) -> List[str]:
+    def __call__(self, sents: List[str]) -> List[List[str]]:
         """
         Args:
             sents: List[str]
                 表示需要进行分词的字符串列表，例如['今天天气真好', '我爱北京天安门']
 
         Returns:
-            List[str]
+            List[List[str]]
                 表示每句话分词后的结果（词语间用空格隔开），例如['今天 天气 真 好', '我 爱 北京 天安门']
         """
         return super().__call__(sents)

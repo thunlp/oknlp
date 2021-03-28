@@ -13,12 +13,12 @@ class BaseTyping(BaseAlgorithm):
     def to(self, device: str):
         return super().to(device)
 
-    def __call__(self, sents: List[Tuple[str, list]]) -> List[List[Tuple[str, float]]]:
+    def __call__(self, sents: List[Tuple[str, Tuple[int, int]]]) -> List[List[Tuple[str, float]]]:
         """
         Args:
             sents: List[Tuple[str, list]]
-                每一个输入都是一个[str, list]元组，第一个参数是上下文字符串，第二个参数是实体的提及位置[begin, end)，例如，
-                [("3月15日,北方多地正遭遇近10年来强度最大、影响范围最广的沙尘暴。", [30, 33])]
+                每一个输入都是一个[str, Tuple[int, int]]元组，第一个参数是上下文字符串，第二个参数是实体的提及位置[begin, end)，例如，
+                [("3月15日,北方多地正遭遇近10年来强度最大、影响范围最广的沙尘暴。", (30, 33))]
 
         Returns:
             List[List[Tuple[str, float]]]
