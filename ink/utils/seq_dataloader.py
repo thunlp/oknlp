@@ -2,6 +2,7 @@ import re
 import torch
 from transformers import BertTokenizer
 
+
 def sequence_mask(sequence_length, max_len=80, device=None, padding=True):  # sequence_length :(batch_size, )
     if (not padding):
         max_len = torch.max(sequence_length)
@@ -12,10 +13,7 @@ def sequence_mask(sequence_length, max_len=80, device=None, padding=True):  # se
     return seq_range_expand < seq_length_expand
 
 
-
-
 class SeqDataset:
-
     def __init__(self, tag_path, bert_tokenizer=None, max_sentence_length=80):
         self.bert_tokenizer = bert_tokenizer
         self.transformer = SeqTransformer(tag_path, bert_tokenizer, max_sentence_length)
@@ -45,11 +43,8 @@ class SeqTransformer:
 
     def item2id(self, item):
         l = len(item['token'])
-
         tokens = self.padding(self.tokenizer.convert_tokens_to_ids(self.tokenizer.tokenize(item['token'])))
-
         tags = self.padding([self.tag2id[t] for t in (item['tag'].split(' '))])
         lens = torch.LongTensor([l])
         masks = sequence_mask(lens, device=None)
-
         return tokens, tags, masks
