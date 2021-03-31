@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from ..layers.pretrain import Backbone
 
 
-class Base(nn.Module):
+class BertSeq(nn.Module):
     def __init__(self):
         super().__init__()
         self.bert = Backbone()

@@ -1,7 +1,7 @@
 import torch
 from ..BaseCWS import BaseCWS
 from ....utils.dataset import Dataset
-from ....nn.models import Model
+from ....nn.models import BertSeq as Model
 from torch import nn
 import torch.utils.data as Data
 from functools import reduce
@@ -11,7 +11,7 @@ import os
 
 labels = reduce(lambda x,y:x+y, [[f"{kd}-{l}" for kd in ('B','I','O')] for l in ('SEG',)])
 
-class Tester(BaseCWS):
+class BertCWS(BaseCWS):
     def __init__(self, sents):
         self.cws_path = load('cws')
         self.sents = sents

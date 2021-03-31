@@ -1,1 +1,1 @@
-from .BertNER import Tester
+from .BertNER import BertNER

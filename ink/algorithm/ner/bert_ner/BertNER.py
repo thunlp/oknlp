@@ -1,7 +1,7 @@
 import torch
 from ..BaseNER import BaseNER
 from ....utils.dataset import Dataset
-from ....nn.models import Model
+from ....nn.models import BertSeq as Model
 from torch import nn
 import torch.utils.data as Data
 from functools import reduce
@@ -11,7 +11,7 @@ import os
 
 labels = ['O'] + reduce(lambda x,y:x+y, [[f"{kd}-{l}" for kd in ('B','I', 'O')] for l in ('PER','LOC','ORG')])
 
-class Tester(BaseNER):
+class BertNER(BaseNER):
     def __init__(self, sents):
         self.ner_path = load('ner')
         self.sents = sents

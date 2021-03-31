@@ -1,1 +1,1 @@
-from .BertCWS import Tester
+from .BertCWS import BertCWS
