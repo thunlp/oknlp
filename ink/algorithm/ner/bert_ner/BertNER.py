@@ -1,70 +1,62 @@
 import torch
-import os
 from ..BaseNER import BaseNER
-from ....utils.seq_dataloader import SeqDataset
-from ....nn.models import BertLSTMCRF
+from ....utils.dataset import Dataset
+from ....nn.models import Model
+from torch import nn
+import torch.utils.data as Data
+from functools import reduce
+from ....utils.format_output import format_output
 from ....data import load
+import os
 
+labels = ['O'] + reduce(lambda x,y:x+y, [[f"{kd}-{l}" for kd in ('B','I', 'O')] for l in ('PER','LOC','ORG')])
 
-class BertNER(BaseNER):
-    def __init__(self, device=None):
+class Tester(BaseNER):
+    def __init__(self, sents):
         self.ner_path = load('ner')
-        self.model = BertLSTMCRF(input_size=300, hidden_size=200, label_sizes=[8], toplayer='CRF')
-        self.seq = SeqDataset(tag_path=os.path.join(self.ner_path, 'tagset.txt'),
-                              bert_tokenizer='bert-base-chinese')
-        self.id2tag = self.seq.tagging()
-        self.checkpoint = torch.load(os.path.join(self.ner_path, "bert2.pth"), map_location=lambda storage, loc: storage)
-        self.model.load_state_dict(self.checkpoint['net'], False)
+        self.sents = sents
+        self.prepare_dataset()
+        self.prepare_model()
+    def prepare_model(self):
+        self.model = Model()
+        self.model.expand_to(len(labels))
+        self.model.load_state_dict(
+            torch.load(os.path.join(self.ner_path,"ner_bert.ckpt")))
+        self.model = nn.DataParallel(self.model.cuda())
         self.model.eval()
 
-        super().__init__(device)
+    def prepare_dataset(self):
+        self.test_dataset = Dataset(self.sents)
+        self.test_loader = Data.DataLoader(self.test_dataset, batch_size=4, num_workers=4)
 
-    def to(self, device):
-        self.model.to(device)
-        return super().to(device)
+    def infer_step(self, batch):
+        x, y, at = batch
+        x = x.cuda()
+        y = y.cuda()
+        at = at.cuda()
+        with torch.no_grad():
+            p = self.model(x, at)
+            mask = y != -1
+        return torch.where(mask, p, 0).cpu().tolist(), mask.cpu().tolist()
 
-    def __call__(self, sents):
-        results = []
-        for sent in sents:
-            test_pkg = {'token': sent, 'tag': ' '.join(['O'] * len(sent))}
-            tokens, tags, masks = self.seq.transformer.item2id(test_pkg)
-            tokens = torch.LongTensor([tokens])
-            with torch.no_grad():
-                out = self.model.predict(8, tokens.to(self.device), masks.to(self.device))
-                out = out.cpu().tolist()[0]
-                print(out)
-                out_etts = self.get_entity(out, self.id2tag)
-            results.append(out_etts)
+    def infer_epoch(self, infer_loader):
+        pred, mask = [], []
+        for batch in infer_loader:
+            p, m = self.infer_step(batch)
+            pred += p
+            mask += m
+        results =[]
+        for i in format_output(self.sents, pred,labels):
+            res = []
+            for j in i:
+                tmp ={}
+                tmp['type'] = j[0]
+                tmp['begin'] =j[1]
+                tmp['end'] = j[2]
+                res.append(tmp)
+            results.append(res)
         return results
 
-    def get_entity(self, path, tag_map):
-        results = []
-        record = {}
-        for index, tag_id in enumerate(path):
-            if tag_id == 0:
-                continue
-            tag = tag_map[tag_id]
-            print(tag)
-            if tag.startswith("B_"):
-                if record.get("end"):
-                    if record["type"] != "T":
-                        results.append(record)
-                record = {}
-                record["begin"] = index
-                record["type"] = tag.split("_")[1]
-            elif tag.startswith("I_") and "begin" in record:
-                tag_type = tag.split("_")[1]
-                if tag_type == record["type"]:
-                    record["end"] = index
-            else:
-                if record.get("end"):
-                    if record["type"] != "T":
-                        results.append(record)
-                    record = {}
-            print(record)
-        if record.get("end"):
-            if record["type"] == "T":
-                pass
-            else:
-                results.append(record)
-        return results
+    def __call__(self):
+        return self.infer_epoch(self.test_loader)
+
