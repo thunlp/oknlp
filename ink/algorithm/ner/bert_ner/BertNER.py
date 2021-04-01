@@ -12,28 +12,30 @@ import os
 labels = ['O'] + reduce(lambda x,y:x+y, [[f"{kd}-{l}" for kd in ('B','I', 'O')] for l in ('PER','LOC','ORG')])
 
 class BertNER(BaseNER):
-    def __init__(self, sents):
+    def __init__(self, device=None):
         self.ner_path = load('ner')
-        self.sents = sents
-        self.prepare_dataset()
-        self.prepare_model()
-    def prepare_model(self):
         self.model = Model()
         self.model.expand_to(len(labels))
         self.model.load_state_dict(
             torch.load(os.path.join(self.ner_path,"ner_bert.ckpt")))
-        self.model = nn.DataParallel(self.model.cuda())
         self.model.eval()
+        super().__init__(device)
 
-    def prepare_dataset(self):
+    def to(self, device):
+        self.model = nn.DataParallel(self.model.to(device))
+        return super().to(device)
+
+    def __call__(self,sents):
+        self.sents = sents
         self.test_dataset = Dataset(self.sents)
         self.test_loader = Data.DataLoader(self.test_dataset, batch_size=4, num_workers=4)
+        return self.infer_epoch(self.test_loader)
 
     def infer_step(self, batch):
         x, y, at = batch
-        x = x.cuda()
-        y = y.cuda()
-        at = at.cuda()
+        x = x.to(self.device)
+        y = y.to(self.device)
+        at = at.to(self.device)
         with torch.no_grad():
             p = self.model(x, at)
             mask = y != -1
@@ -57,6 +59,5 @@ class BertNER(BaseNER):
             results.append(res)
         return results
 
-    def __call__(self):
-        return self.infer_epoch(self.test_loader)
+    
 
