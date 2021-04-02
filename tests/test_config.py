@@ -1,7 +1,7 @@
 import unittest
 import os
 
-HOME = os.environ["HOME"]
+HOME = os.environ["HOMEPATH"]
 DATA_DIR = os.path.abspath("./testdir")
 TESTYAML1 = """
 path:
