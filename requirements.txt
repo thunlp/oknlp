@@ -3,3 +3,4 @@ PyYaml
 requests
 tqdm
 transformers
+seqeval
