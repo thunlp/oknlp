@@ -38,6 +38,7 @@ class BertNER(BaseNER):
         at = at.to(self.device)
         with torch.no_grad():
             p = self.model(x, at)
+            p = p.to(self.device)
             mask = y != -1
         return torch.where(mask, p, 0).cpu().tolist(), mask.cpu().tolist()
 
