@@ -2,6 +2,7 @@ import unittest
 
 
 sents = ['我爱北京天安门']
+
 class TestTasks(unittest.TestCase):
 
     def test_ner(self):

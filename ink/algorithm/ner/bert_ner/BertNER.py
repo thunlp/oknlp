@@ -22,13 +22,13 @@ class BertNER(BaseNER):
         super().__init__(device)
 
     def to(self, device):
-        self.model = nn.DataParallel(self.model.to(device))
+        self.model = self.model.to(device)
         return super().to(device)
 
     def __call__(self,sents):
         self.sents = sents
         self.test_dataset = Dataset(self.sents)
-        self.test_loader = Data.DataLoader(self.test_dataset, batch_size=4, num_workers=4)
+        self.test_loader = Data.DataLoader(self.test_dataset, batch_size=4, num_workers=0)
         return self.infer_epoch(self.test_loader)
 
     def infer_step(self, batch):

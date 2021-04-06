@@ -22,13 +22,13 @@ class BertCWS(BaseCWS):
         super().__init__(device)
 
     def to(self, device):
-        self.model = nn.DataParallel(self.model.to(device))
+        self.model = self.model.to(device)
         return super().to(device)
 
     def __call__(self,sents):
         self.sents = sents
         self.test_dataset = Dataset(self.sents)
-        self.test_loader = Data.DataLoader(self.test_dataset, batch_size=4, num_workers=4)
+        self.test_loader = Data.DataLoader(self.test_dataset, batch_size=4, num_workers=0)
         return self.infer_epoch(self.test_loader)    
 
     def infer_step(self, batch):
@@ -49,8 +49,8 @@ class BertCWS(BaseCWS):
             mask += m
         results =[]
         for i in range(len(self.sents)):
-            tmp = format_output(self.sents, pred,labels + ['O'])[i]
-            results.append(' '.join([self.sents[i][j[1]:j[2]+1] for j in tmp]))
+            tmp = format_output(self.sents, pred, labels + ['O'])[i]
+            results.append([self.sents[i][j[1]:j[2]+1] for j in tmp])
         return results
 
 
