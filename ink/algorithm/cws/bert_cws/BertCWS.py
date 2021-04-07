@@ -52,6 +52,7 @@ class BertCWS(BaseCWS):
             mask += m
         results =[]
         for i in range(len(self.sents)):
+            print(pred)
             tmp = format_output(self.sents, pred, labels + ['O'])[i]
             results.append([self.sents[i][j[1]:j[2]+1] for j in tmp])
         return results

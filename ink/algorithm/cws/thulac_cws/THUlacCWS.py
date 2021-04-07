@@ -4,7 +4,7 @@ from ....data import load
 
 class THUlacCWS(BaseAlgorithm):
     def __init__(self, device=None):
-        model_path = load('models')
+        model_path = load('thulac_models')
         self.model = THUlac(model_path)
         super().__init__(device)
 
