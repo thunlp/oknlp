@@ -2,6 +2,5 @@ name: ner
 version: 1
 path: "ner.zip"
 files:
-  - "tagset.txt"
-  - "bert2.pth"
+  - "ner_bert.ckpt"
 description: NER模型

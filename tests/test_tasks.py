@@ -2,22 +2,29 @@ import unittest
 
 
 sents = ['我爱北京天安门']
+
 class TestTasks(unittest.TestCase):
 
-    """ FIXME: 现有模型由于版本原因需要更换
     def test_ner(self):
-        from ink.algorithm import NamedEntityRecognition
+        from ink.algorithm.ner import get_all_ner
         # only test input.shape[0] == output.shape[0] (which is batch_size)
-        re1 = [[[{'begin': 2, 'type': 'LOC', 'end': 3}, {'begin': 4, 'type': 'LOC', 'end': 6}]]]
-        result_ner = NamedEntityRecognition().ner(sents)
-        self.assertEqual(result_ner,re1)
-
+        sents = ["清华大学自然语言处理与社会人文计算实验室"]
+        for ner in get_all_ner():
+            results = ner(sents)
+            self.assertEqual(len(sents), len(results))
+            for sent, result in zip(sents, results):
+                sent_r = ''.join([sent[word['begin']:word['end']+1] for word in result])
+                self.assertEqual(sent, sent_r)
+    
     def test_cws(self):
-        from ink.algorithm import ChineseWordSegmentation
-        re2 = ['我 爱 北 京 天 安门']
-        result_cws = ChineseWordSegmentation().cws(sents)
-        self.assertEqual(result_cws, re2)
-    """
+        from ink.algorithm.cws import get_all_cws
+        sents = ["清华大学自然语言处理与社会人文计算实验室"]
+        for cws in get_all_cws():
+            results = cws(sents)
+            self.assertEqual(len(sents), len(results))
+            for sent, result in zip(sents, results):
+                sent_r = ''.join(result)
+                self.assertEqual(sent, sent_r)
 
     def test_pos_tagging(self):
         from ink.algorithm.postagging import get_all_pos_tagging
