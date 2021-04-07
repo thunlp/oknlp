@@ -1,11 +1,11 @@
 import torch.nn as nn
-from transformers import  BertModel as md
+from transformers import AutoConfig, AutoModel
 
 
 class Backbone(nn.Module):
     def __init__(self):
         super().__init__()
-        self.bert = md.from_pretrained("bert-base-chinese").train() # default is eval()
+        self.bert = AutoModel.from_config(AutoConfig.from_pretrained("bert-base-chinese"))
     
     def frozen(self, bool):
         bool = not bool

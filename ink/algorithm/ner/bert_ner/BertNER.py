@@ -2,11 +2,11 @@ import torch
 from ..BaseNER import BaseNER
 from ....utils.dataset import Dataset
 from ....nn.models import BertSeq as Model
-from torch import nn
 import torch.utils.data as Data
 from functools import reduce
 from ....utils.format_output import format_output
 from ....data import load
+from ....config import config
 import os
 
 labels = ['O'] + reduce(lambda x,y:x+y, [[f"{kd}-{l}" for kd in ('B','I', 'O')] for l in ('PER','LOC','ORG')])
@@ -17,9 +17,9 @@ class BertNER(BaseNER):
         self.model = Model()
         self.model.expand_to(len(labels),device)
         if device == None:
-            dv = 'cpu'
+            device = config.default_device
         self.model.load_state_dict(
-            torch.load(os.path.join(self.ner_path,"ner_bert.ckpt"),map_location=torch.device(dv)))
+            torch.load(os.path.join(self.ner_path,"ner_bert.ckpt"),map_location=torch.device(device)))
         self.model.eval()
         super().__init__(device)
 

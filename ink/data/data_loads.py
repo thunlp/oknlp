@@ -2,7 +2,6 @@ from ..config import config
 import os
 import requests
 import zipfile
-import shutil
 import logging
 from tqdm import tqdm
 from ink.data.resources import get_resouce_info
@@ -34,7 +33,7 @@ def download_ud_model(task_name, version=None):
 
     if download_dir is None:
         download_dir = os.path.join( os.path.abspath(config.path[0]), "sources", task_name)
-        os.makedirs(download_dir)
+        os.makedirs(download_dir, exist_ok=True)
 
         download_url = config.source + info["path"]
         download_file_path = os.path.join(download_dir, "resource.zip")
