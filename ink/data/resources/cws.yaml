@@ -1,0 +1,6 @@
+name: cws
+version: 1
+path: "cws.zip"
+files:
+  - "cws_bert.ckpt"
+description: 中文分词模型

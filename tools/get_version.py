@@ -6,5 +6,5 @@ def get_version():
         if ref.startswith("refs/tags/"):
             return ref[len("refs/tags/"):]
     if "GITHUB_SHA" in os.environ:
-        return os.environ["os.environ"]
+        return os.environ["GITHUB_SHA"]
     return "UNK"

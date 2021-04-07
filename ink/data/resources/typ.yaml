@@ -1,0 +1,7 @@
+name: typ
+version: 1
+path: "typ.zip"
+files:
+  - "types.json"
+  - "typing.pth"
+description: Typing模型

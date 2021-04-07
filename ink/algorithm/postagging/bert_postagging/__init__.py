@@ -1,0 +1,1 @@
+from .BertPosTagging import BertPosTagging
