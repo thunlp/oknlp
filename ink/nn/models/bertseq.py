@@ -15,14 +15,14 @@ class BertSeq(nn.Module):
     # def froze_bert(self, bool):
     #     self.bert.frozen(bool)
 
-    def expand_to(self, new_class):
+    def expand_to(self, new_class,device=None):
         old_weight = self.cls.weight.data
         old_bias = self.cls.bias.data
         self.cls = nn.Linear(768, new_class)
         self.cls.weight.data[:self.num_class] = old_weight
         self.cls.bias.data[:self.num_class] = old_bias
         self.num_class = new_class
-        self.lossfunc = nn.CrossEntropyLoss(ignore_index=-1, weight=torch.Tensor([1 if i == 0 else 1 for i in range(new_class)]).cuda())
+        self.lossfunc = nn.CrossEntropyLoss(ignore_index=-1, weight=torch.Tensor([1 if i == 0 else 1 for i in range(new_class)]).to(device))
     
     def forward(self, sent, attention_mask, y=None, hidden_output=False, logit_output=False):
         h = self.bert(sent, output_only=True, attention_mask=attention_mask)

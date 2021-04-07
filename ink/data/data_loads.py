@@ -2,6 +2,7 @@ from ..config import config
 import os
 import requests
 import zipfile
+import shutil
 import logging
 from tqdm import tqdm
 from ink.data.resources import get_resouce_info

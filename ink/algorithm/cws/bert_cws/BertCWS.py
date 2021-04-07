@@ -15,9 +15,11 @@ class BertCWS(BaseCWS):
     def __init__(self, device=None):
         self.cws_path = load('cws')
         self.model = Model()
-        self.model.expand_to(len(labels))
+        self.model.expand_to(len(labels),device)
+        if device == None:
+            dv = 'cpu'
         self.model.load_state_dict(
-            torch.load(os.path.join(self.cws_path,"cws_bert.ckpt")))
+            torch.load(os.path.join(self.cws_path,"cws_bert.ckpt"),map_location=torch.device(dv)))
         self.model.eval()
         super().__init__(device)
 
