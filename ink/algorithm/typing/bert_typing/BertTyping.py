@@ -8,6 +8,8 @@ from ....data import load
 
 
 class BertTyping(BaseTyping):
+    """使用Bert模型实现的Typing算法
+    """
     def __init__(self, device=None):
         typ_path = load('typ')
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')

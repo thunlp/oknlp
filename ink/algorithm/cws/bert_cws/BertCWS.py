@@ -9,17 +9,20 @@ from ....data import load
 from ....config import config
 import os
 
-labels = reduce(lambda x,y:x+y, [[f"{kd}-{l}" for kd in ('B','I','O')] for l in ('SEG',)])
+labels = reduce(lambda x, y: x + y, [[f"{kd}-{l}" for kd in ('B', 'I', 'O')] for l in ('SEG',)])
+
 
 class BertCWS(BaseCWS):
+    """使用Bert模型实现的CWS算法
+    """
     def __init__(self, device=None):
         self.cws_path = load('cws')
         self.model = Model()
-        self.model.expand_to(len(labels),device)
-        if device == None:
+        self.model.expand_to(len(labels), device)
+        if device is None:
             device = config.default_device
         self.model.load_state_dict(
-            torch.load(os.path.join(self.cws_path,"cws_bert.ckpt"),map_location=torch.device(device)))
+            torch.load(os.path.join(self.cws_path, "cws_bert.ckpt"), map_location=torch.device(device)))
         self.model.eval()
         super().__init__(device)
 
@@ -27,11 +30,11 @@ class BertCWS(BaseCWS):
         self.model = self.model.to(device)
         return super().to(device)
 
-    def __call__(self,sents):
+    def __call__(self, sents):
         self.sents = sents
         self.test_dataset = Dataset(self.sents)
         self.test_loader = Data.DataLoader(self.test_dataset, batch_size=4, num_workers=0)
-        return self.infer_epoch(self.test_loader)    
+        return self.infer_epoch(self.test_loader)
 
     def infer_step(self, batch):
         x, y, at = batch
@@ -50,10 +53,8 @@ class BertCWS(BaseCWS):
             p, m = self.infer_step(batch)
             pred += p
             mask += m
-        results =[]
+        results = []
         for i in range(len(self.sents)):
             tmp = format_output(self.sents, pred, labels + ['O'])[i]
-            results.append([self.sents[i][j[1]:j[2]+1] for j in tmp])
+            results.append([self.sents[i][j[1]:j[2] + 1] for j in tmp])
         return results
-
-

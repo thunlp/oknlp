@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Dict, Union
 from ..BaseAlgorithm import BaseAlgorithm
 
 
@@ -13,13 +13,14 @@ class BaseNER(BaseAlgorithm):
     def to(self, device: str):
         return super().to(device)
 
-    def __call__(self, sents: List[str]) -> List[List[Tuple[str, str]]]:
+    def __call__(self, sents: List[str]) -> List[List[Dict[str, Union[str, int]]]]:
         """
         Args:
-            sents: List[List[Tuple[str, str]]]
-                表示需要进行命名实体分类的字符串列表
+            sents: List[str]
+                表示需要进行命名实体分类的字符串列表，例如['我爱北京天安门']
 
         Returns:
-            ???
+            List[List[Dict[str, Union[str, int]]]]
+                表示每句话的命名实体分类结果，例如[[{'type': 'LOC', 'begin': 2, 'end': 3}, {'type': 'LOC', 'begin': 4, 'end': 6}]]
         """
         return super().__call__(sents)

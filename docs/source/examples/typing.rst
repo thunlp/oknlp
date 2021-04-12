@@ -3,12 +3,11 @@
 
 .. code-block:: python
 
-    from ink.config.config import config
-    from ink.algorithm.typing import get_typing
+    import ink
 
 
-    config.default_device = "cuda: 1"
-    typing = get_typing(name="bert")
+    ink.config.default_device = "cuda: 1"
+    typing = ink.typing.get_typing(name="bert")
     sents = [
         ("3月15日,北方多地正遭遇近10年来强度最大、影响范围最广的沙尘暴。", [30, 33]),
     ]

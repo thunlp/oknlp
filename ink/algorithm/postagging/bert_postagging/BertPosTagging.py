@@ -11,6 +11,8 @@ from .evaluate_funcs import format_output
 
 
 class BertPosTagging(BaseAlgorithm):
+    """使用Bert模型实现的PosTagging算法
+    """
     def __init__(self, device=None):
         pos_path = load('pos')
         self.model = BertLinear(classlist)
