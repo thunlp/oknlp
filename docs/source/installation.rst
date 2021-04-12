@@ -6,7 +6,7 @@
 
 .. code-block:: sh
 
-    pip install ink
+
 
 2. git clone
 -----------------------------

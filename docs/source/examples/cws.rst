@@ -6,8 +6,8 @@
     import ink
 
 
-    ink.config.default_device = "cuda: 1"
     cws = ink.cws.get_cws(name="bert")
+    cws.to("cuda:1")
     sents = ['我爱北京天安门']
     result = cws(sents)
     # result == [['我', '爱', '北京', '天安门']]

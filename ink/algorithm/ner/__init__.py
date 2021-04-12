@@ -6,9 +6,13 @@ from .bert_ner import BertNER
 def get_ner(name: str = "") -> BaseNER:
     """根据条件获取一个NER类的实例，无法根据条件获取时返回BertNER()
 
-    Args:
-        name: str，表示NER类使用到的方法
-            "bert"->返回以Bert模型实现的算法
+    :param str name: NER类使用到的方法
+
+        * "bert"->返回以Bert模型实现的算法
+
+        * 默认返回以Bert模型实现的算法
+
+    :returns: 一个NER类的实例
     """
     name = name.lower()
     if name == "bert":

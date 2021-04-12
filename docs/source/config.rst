@@ -23,7 +23,7 @@
 配置加载
 ----------
 
-import工具包时，会进行配置的初始化，并保存在一个类实例(ink.config.config)中
+import工具包时，会进行配置的初始化，并保存在一个类实例(ink.config)中
 
 加载配置时的优先级为：当前目录下的".ink.yml"文件（如果有）>用户HOME目录下的".ink.yml"文件（如果有）>配置默认值
 
@@ -33,5 +33,5 @@ import工具包时，会进行配置的初始化，并保存在一个类实例(i
 
 .. code-block:: python
 
-    from ink.config.config import config
-    config.default_device = "cuda: 1"
+    import ink
+    ink.config.default_device = "cuda:1"

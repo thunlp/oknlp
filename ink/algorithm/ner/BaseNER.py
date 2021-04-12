@@ -15,12 +15,13 @@ class BaseNER(BaseAlgorithm):
 
     def __call__(self, sents: List[str]) -> List[List[Dict[str, Union[str, int]]]]:
         """
-        Args:
-            sents: List[str]
-                表示需要进行命名实体分类的字符串列表，例如['我爱北京天安门']
-
-        Returns:
-            List[List[Dict[str, Union[str, int]]]]
-                表示每句话的命名实体分类结果，例如[[{'type': 'LOC', 'begin': 2, 'end': 3}, {'type': 'LOC', 'begin': 4, 'end': 6}]]
+        :param List[str] sents: 要进行命名实体分类的字符串列表
+        :return: List[List[Dict[str, Union[str, int]]]] 每句话的命名实体分类结果
+        :example:
+            >>> import ink
+            >>> ner = ink.ner.get_ner()
+            >>> sents = ['我爱北京天安门']
+            >>> ner(sents)
+            [[{'type': 'LOC', 'begin': 2, 'end': 3}, {'type': 'LOC', 'begin': 4, 'end': 6}]]
         """
         return super().__call__(sents)
