@@ -33,7 +33,7 @@ class BertCWS(BaseCWS):
     def __call__(self, sents):
         self.sents = sents
         self.test_dataset = Dataset(self.sents)
-        self.test_loader = Data.DataLoader(self.test_dataset, batch_size=4, num_workers=0)
+        self.test_loader = Data.DataLoader(self.test_dataset, batch_size=8, num_workers=0)
         return self.infer_epoch(self.test_loader)
 
     def infer_step(self, batch):
@@ -54,7 +54,7 @@ class BertCWS(BaseCWS):
             pred += p
             mask += m
         results = []
-        for i in range(len(self.sents)):
-            tmp = format_output(self.sents, pred, labels + ['O'])[i]
-            results.append([self.sents[i][j[1]:j[2] + 1] for j in tmp])
+        formatted_output = format_output(self.sents, pred, labels + ['O'])
+        for sent, out in zip(self.sents, formatted_output):
+            results.append([sent[j[1]:j[2] + 1] for j in out])
         return results

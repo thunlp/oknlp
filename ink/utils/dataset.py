@@ -2,6 +2,7 @@ import torch.utils.data as Data
 import torch
 from transformers import BertTokenizer as tk
 
+
 class Tokenizer:
     def __init__(self):
         self.tokenizer = tk.from_pretrained("bert-base-chinese")
@@ -14,9 +15,9 @@ class Tokenizer:
 
 
 class Dataset(Data.Dataset):
-    def __init__(self, sents):
-        self.tokenizer = Tokenizer()
+    tokenizer = Tokenizer()
 
+    def __init__(self, sents):
         self.x = []
         self.y = []
         self.at = []
@@ -25,7 +26,7 @@ class Dataset(Data.Dataset):
             sx = ['[CLS]']
             sy = [-1]
             sat = [1]
-            for i, w in enumerate(x):
+            for w in x:
                 tokens = self.tokenizer(w)
                 sx += tokens
                 sy += [0] * len(tokens)
@@ -50,4 +51,3 @@ class Dataset(Data.Dataset):
 
     def __getitem__(self, i):
         return torch.LongTensor(self.x[i]), torch.LongTensor(self.y[i]), torch.LongTensor(self.at[i])
-

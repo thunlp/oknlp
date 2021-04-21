@@ -4,6 +4,8 @@ import torch
 
 
 class Dataset(Data.Dataset):
+    tokenizer = BertTokenizer()
+
     def __init__(self, max_length=128, examples=None):
         self.examples = examples
 
@@ -27,8 +29,6 @@ class Dataset(Data.Dataset):
             self.sent.append(sent)
             self.attn.append(attn)
             self.label.append(label)
-
-        self.tokenizer = BertTokenizer()
 
     def __len__(self):
         return len(self.examples)

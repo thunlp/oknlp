@@ -29,7 +29,7 @@ class BertPosTagging(BaseAlgorithm):
         processed_sents = [process_sent(' '.join(sent)).split(' ') for sent in sents]
         examples = [[sent, [0 for i in range(len(sent))]] for sent in processed_sents]
         dataset = Dataset(examples=examples)
-        formatted_output = self.infer_epoch(Data.DataLoader(dataset, batch_size=4, num_workers=0))
+        formatted_output = self.infer_epoch(Data.DataLoader(dataset, batch_size=8, num_workers=0))
         results = self.process_output(sents, formatted_output)
         return results
 
