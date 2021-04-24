@@ -1,6 +1,7 @@
 import os
 import torch
 import torch.utils.data as Data
+from transformers import BertTokenizer
 from ....nn.models import BertLinear
 from ....data import load
 from ...BaseAlgorithm import BaseAlgorithm
@@ -19,6 +20,7 @@ class BertPosTagging(BaseAlgorithm):
         checkpoint = torch.load(os.path.join(pos_path, "params.ckpt"), map_location=lambda storage, loc: storage)
         self.model.load_state_dict(checkpoint)
         self.model.eval()
+        self.tokenizer = BertTokenizer.from_pretrained("bert-base-chinese")
         super().__init__(device)
 
     def to(self, device):
@@ -28,7 +30,7 @@ class BertPosTagging(BaseAlgorithm):
     def __call__(self, sents):
         processed_sents = [process_sent(' '.join(sent)).split(' ') for sent in sents]
         examples = [[sent, [0 for i in range(len(sent))]] for sent in processed_sents]
-        dataset = Dataset(examples=examples)
+        dataset = Dataset(examples, self.tokenizer)
         formatted_output = self.infer_epoch(Data.DataLoader(dataset, batch_size=8, num_workers=0))
         results = self.process_output(sents, formatted_output)
         return results

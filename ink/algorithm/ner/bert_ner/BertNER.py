@@ -4,6 +4,7 @@ from ....utils.dataset import Dataset
 from ....nn.models import BertSeq as Model
 import torch.utils.data as Data
 from functools import reduce
+from transformers import BertTokenizer
 from ....utils.format_output import format_output
 from ....data import load
 from ....config import config
@@ -24,6 +25,7 @@ class BertNER(BaseNER):
         self.model.load_state_dict(
             torch.load(os.path.join(self.ner_path, "ner_bert.ckpt"), map_location=torch.device(device)))
         self.model.eval()
+        self.tokenizer = BertTokenizer.from_pretrained("bert-base-chinese")
         super().__init__(device)
 
     def to(self, device):
@@ -32,7 +34,7 @@ class BertNER(BaseNER):
 
     def __call__(self, sents):
         self.sents = sents
-        self.test_dataset = Dataset(self.sents)
+        self.test_dataset = Dataset(self.sents, self.tokenizer)
         self.test_loader = Data.DataLoader(self.test_dataset, batch_size=8, num_workers=0)
         return self.infer_epoch(self.test_loader)
 
