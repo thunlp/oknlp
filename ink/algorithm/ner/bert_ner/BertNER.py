@@ -6,6 +6,7 @@ import torch.utils.data as Data
 from functools import reduce
 from transformers import BertTokenizer
 from ....utils.format_output import format_output
+from ....utils.process_io import split_text_list, merge_result
 from ....data import load
 from ....config import config
 import os
@@ -33,10 +34,20 @@ class BertNER(BaseNER):
         return super().to(device)
 
     def __call__(self, sents):
-        self.sents = sents
+        self.sents, is_end_list = split_text_list(sents, 126)
         self.test_dataset = Dataset(self.sents, self.tokenizer)
         self.test_loader = Data.DataLoader(self.test_dataset, batch_size=8, num_workers=0)
-        return self.infer_epoch(self.test_loader)
+        split_ans_list = self.infer_epoch(self.test_loader)
+        count = 0
+        for i, sent in enumerate(self.sents):
+            split_ans = split_ans_list[i]
+            for d in split_ans:
+                d['begin'] += count
+                d['end'] += count
+            count += len(sent)
+            if is_end_list[i]:
+                count = 0
+        return merge_result(split_ans_list, is_end_list)
 
     def infer_step(self, batch):
         x, y, at = batch
@@ -57,12 +68,5 @@ class BertNER(BaseNER):
             mask += m
         results = []
         for i in format_output(self.sents, pred, labels):
-            res = []
-            for j in i:
-                tmp = {}
-                tmp['type'] = j[0]
-                tmp['begin'] = j[1]
-                tmp['end'] = j[2]
-                res.append(tmp)
-            results.append(res)
+            results.append([{'type': j[0], 'begin': j[1], 'end': j[2]} for j in i])
         return results

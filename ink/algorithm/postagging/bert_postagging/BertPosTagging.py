@@ -2,6 +2,7 @@ import os
 import torch
 import torch.utils.data as Data
 from transformers import BertTokenizer
+from ....utils.process_io import split_text_list, merge_result
 from ....nn.models import BertLinear
 from ....data import load
 from ...BaseAlgorithm import BaseAlgorithm
@@ -28,12 +29,13 @@ class BertPosTagging(BaseAlgorithm):
         return super().to(device)
 
     def __call__(self, sents):
+        sents, is_end_list = split_text_list(sents, 126)
         processed_sents = [process_sent(' '.join(sent)).split(' ') for sent in sents]
         examples = [[sent, [0 for i in range(len(sent))]] for sent in processed_sents]
         dataset = Dataset(examples, self.tokenizer)
         formatted_output = self.infer_epoch(Data.DataLoader(dataset, batch_size=8, num_workers=0))
         results = self.process_output(sents, formatted_output)
-        return results
+        return merge_result(results, is_end_list)
 
     def infer_epoch(self, infer_loader):
         pred, mask = [], []

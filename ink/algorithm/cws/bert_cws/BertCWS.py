@@ -6,6 +6,7 @@ from ....nn.models import BertSeq as Model
 import torch.utils.data as Data
 from functools import reduce
 from ....utils.format_output import format_output
+from ....utils.process_io import merge_result, split_text_list
 from ....data import load
 from ....config import config
 import os
@@ -33,10 +34,10 @@ class BertCWS(BaseCWS):
         return super().to(device)
 
     def __call__(self, sents):
-        self.sents = sents
+        self.sents, is_end_list = split_text_list(sents, 126)
         self.test_dataset = Dataset(self.sents, self.tokenizer)
         self.test_loader = Data.DataLoader(self.test_dataset, batch_size=8, num_workers=0)
-        return self.infer_epoch(self.test_loader)
+        return merge_result(self.infer_epoch(self.test_loader), is_end_list)
 
     def infer_step(self, batch):
         x, y, at = batch

@@ -19,9 +19,12 @@ class Dataset(Data.Dataset):
 
     def __getitem__(self, i):
         [text, span] = self.sents[i]
-        text = (text[:span[0]] + '<ent>' + text[span[0]: span[1]] + '</ents>' + text[span[1]:])[:self.max_length]
+        if span[0] > self.max_length:
+            text = text[span[0]:]
+            span = (0, span[1] - span[0])
+        text = text[:span[0]] + '<ent>' + text[span[0]: span[1]] + '</ents>' + text[span[1]:]
         pos = [text.index('<ent>')]
-        text = self.tokenizer.convert_tokens_to_ids(self.tokenizer.tokenize(text))
+        text = self.tokenizer.convert_tokens_to_ids(self.tokenizer.tokenize(text))[:self.max_length]
         text += [0] * (self.max_length - len(text))
         return torch.LongTensor(text), torch.LongTensor(pos)
 
