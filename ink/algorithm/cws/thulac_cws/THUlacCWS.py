@@ -1,8 +1,11 @@
-from ...BaseAlgorithm import BaseAlgorithm
+from ..BaseCWS import BaseCWS
 from ...._C import THUlac
 from ....data import load
 
-class THUlacCWS(BaseAlgorithm):
+
+class THUlacCWS(BaseCWS):
+    """使用THUlac实现的CWS算法
+    """
     def __init__(self, device=None):
         model_path = load('thulac_models')
         self.model = THUlac(model_path)
@@ -16,4 +19,3 @@ class THUlacCWS(BaseAlgorithm):
                 sep = sep[:-1]
             results.append(sep)
         return results
-

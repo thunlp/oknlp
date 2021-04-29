@@ -1,14 +1,8 @@
 # copy from seqeval package
 
-from __future__ import absolute_import, division, print_function
 
 import warnings
-from collections import defaultdict
-from typing import List, Optional, Type
 
-import numpy as np
-
-from seqeval.scheme import Token
 
 def format_output(sents, pred, classlist):
     pred = [[classlist[t] for t in p] for p in pred]
@@ -19,6 +13,7 @@ def format_output(sents, pred, classlist):
     #         print(''.join(sent[b[1]:b[2]+1]), end=" ")
     #     print()
     return boxes
+
 
 def get_entities(seq, suffix=False):
     """Gets entities from sequence.
@@ -72,6 +67,7 @@ def get_entities(seq, suffix=False):
 
     return chunks
 
+
 def end_of_chunk(prev_tag, tag, prev_type, type_):
     """Checks if a chunk ended between the previous and current word.
     Args:
@@ -106,6 +102,7 @@ def end_of_chunk(prev_tag, tag, prev_type, type_):
         chunk_end = True
 
     return chunk_end
+
 
 def start_of_chunk(prev_tag, tag, prev_type, type_):
     """Checks if a chunk started between the previous and current word.
