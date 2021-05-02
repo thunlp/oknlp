@@ -6,7 +6,7 @@
     import ink
 
 
-    pos_tagging = ink.postagging.get_pos_tagging("bert")
+    pos_tagging = ink.postagging.get_by_name("bert")
     pos_tagging.to("cuda:1")
     sents = ['我爱北京天安门']
     result = pos_tagging(sents)

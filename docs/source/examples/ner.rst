@@ -6,7 +6,7 @@
     import ink
 
 
-    ner = ink.ner.get_ner(name="bert")
+    ner = ink.ner.get_by_name(name="bert")
     ner.to("cuda:1")
     sents = ['我爱北京天安门']
     result = ner(sents)

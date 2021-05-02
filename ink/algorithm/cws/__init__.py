@@ -4,7 +4,7 @@ from .bert_cws import BertCWS
 from .thulac_cws import THUlacCWS
 
 
-def get_cws(name: str = "") -> BaseCWS:
+def get_by_name(name: str = "") -> BaseCWS:
     """根据条件获取一个CWS类的实例，无法根据条件获取时返回BertCWS()
 
     :param str name: CWS类使用到的方法
@@ -25,7 +25,7 @@ def get_cws(name: str = "") -> BaseCWS:
     return BertCWS()
 
 
-def get_all_cws() -> List[BaseCWS]:
+def get_all() -> List[BaseCWS]:
     """获取所有CWS类的实例
     """
     return [BertCWS(), THUlacCWS()]

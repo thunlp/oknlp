@@ -6,6 +6,6 @@ PosTagging
 
 .. autoclass:: ink.postagging.BertPosTagging
 
-.. autofunction:: ink.postagging.get_pos_tagging
+.. autofunction:: ink.postagging.get_by_name
 
-.. autofunction:: ink.postagging.get_all_pos_tagging
+.. autofunction:: ink.postagging.get_all

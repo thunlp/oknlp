@@ -6,7 +6,7 @@
     import ink
 
 
-    typing = ink.typing.get_typing(name="bert")
+    typing = ink.typing.get_by_name(name="bert")
     typing.to("cuda:1")
     sents = [
         ("3月15日,北方多地正遭遇近10年来强度最大、影响范围最广的沙尘暴。", [30, 33]),

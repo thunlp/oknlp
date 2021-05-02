@@ -19,7 +19,7 @@ class BasePosTagging(BaseAlgorithm):
         :return: List[List[Tuple[str, str]]] 每句话中每个词及其对应的词性
         :example:
             >>> import ink
-            >>> postagging = ink.postagging.get_pos_tagging()
+            >>> postagging = ink.postagging.get_by_name()
             >>> sents = ['我爱北京天安门', '今天天气真好']
             >>> postagging(sents)
             [

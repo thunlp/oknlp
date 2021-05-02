@@ -6,6 +6,6 @@ NamedEntityRecognition
 
 .. autoclass:: ink.ner.BertNER
 
-.. autofunction:: ink.ner.get_ner
+.. autofunction:: ink.ner.get_by_name
 
-.. autofunction:: ink.ner.get_all_ner
+.. autofunction:: ink.ner.get_all

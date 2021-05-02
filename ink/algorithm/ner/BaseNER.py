@@ -19,7 +19,7 @@ class BaseNER(BaseAlgorithm):
         :return: List[List[Dict[str, Union[str, int]]]] 每句话的命名实体分类结果
         :example:
             >>> import ink
-            >>> ner = ink.ner.get_ner()
+            >>> ner = ink.ner.get_by_name()
             >>> sents = ['我爱北京天安门']
             >>> ner(sents)
             [[{'type': 'LOC', 'begin': 2, 'end': 3}, {'type': 'LOC', 'begin': 4, 'end': 6}]]

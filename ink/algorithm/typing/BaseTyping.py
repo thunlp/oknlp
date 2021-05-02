@@ -19,7 +19,7 @@ class BaseTyping(BaseAlgorithm):
         :return: List[List[Tuple[str, float]]] 每一个实体所有可能的类型及对应的分数
         :example:
             >>> import ink
-            >>> typing = ink.typing.get_typing()
+            >>> typing = ink.typing.get_by_name()
             >>> sents = [("3月15日,北方多地正遭遇近10年来强度最大、影响范围最广的沙尘暴。", (30, 33))]
             >>> typing(sents)
             [[('object', 0.26066625118255615), ('event', 0.9411928653717041)]]

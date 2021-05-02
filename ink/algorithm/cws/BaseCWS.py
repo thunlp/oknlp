@@ -19,7 +19,7 @@ class BaseCWS(BaseAlgorithm):
         :return: List[List[str]] 每句话分词后的结果
         :example:
             >>> import ink
-            >>> cws = ink.cws.get_cws()
+            >>> cws = ink.cws.get_by_name()
             >>> sents = ['我爱北京天安门']
             >>> cws(sents)
             [['我', '爱', '北京', '天安门']]

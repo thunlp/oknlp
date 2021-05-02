@@ -6,7 +6,7 @@
     import ink
 
 
-    cws = ink.cws.get_cws(name="bert")
+    cws = ink.cws.get_by_name(name="bert")
     cws.to("cuda:1")
     sents = ['我爱北京天安门']
     result = cws(sents)
