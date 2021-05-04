@@ -18,8 +18,8 @@ class BasePosTagging(BaseAlgorithm):
         :param List[str] sents: 需要进行词性标注的字符串列表
         :return: List[List[Tuple[str, str]]] 每句话中每个词及其对应的词性
         :example:
-            >>> import ink
-            >>> postagging = ink.postagging.get_by_name()
+            >>> import oknlp
+            >>> postagging = oknlp.postagging.get_by_name()
             >>> sents = ['我爱北京天安门', '今天天气真好']
             >>> postagging(sents)
             [

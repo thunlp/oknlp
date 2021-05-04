@@ -3,10 +3,10 @@
 
 .. code-block:: python
 
-    import ink
+    import oknlp
 
 
-    cws = ink.cws.get_by_name(name="bert")
+    cws = oknlp.cws.get_by_name(name="bert")
     cws.to("cuda:1")
     sents = ['我爱北京天安门']
     result = cws(sents)

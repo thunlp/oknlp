@@ -1,7 +1,7 @@
 快速入门
 ===========
 
-目前，我们在ink.algorithm模块下包含了
+目前，我们在oknlp.algorithm模块下包含了
 中文分词( :code:`cws` )、
 命名实体识别( :code:`ner` )、
 词性标注( :code:`postagging` )、

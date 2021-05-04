@@ -1,7 +1,7 @@
-Ink
+oknlp
 ==================
 
-Welcome to Ink's documentation!
+Welcome to oknlp's documentation!
 
 .. toctree::
    :maxdepth: 1

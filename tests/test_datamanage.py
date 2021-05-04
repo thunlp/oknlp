@@ -13,7 +13,7 @@ class TestDataManager(unittest.TestCase):
 
     
     def test_load(self):
-        from ink import load, config
+        from oknlp import load, config
 
         old = config.path
         config.path = [ DATA_DIR ]
@@ -26,7 +26,7 @@ class TestDataManager(unittest.TestCase):
             load("unknown")
     
     def test_loadpath(self):
-        from ink import load, config
+        from oknlp import load, config
         old = config.path
 
         config.path = [os.path.join(DATA_DIR, "path1")]

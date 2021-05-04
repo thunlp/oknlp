@@ -1,4 +1,4 @@
 介绍
 =======
 
-ink(integrate knowledge)的介绍
+oknlp的介绍
