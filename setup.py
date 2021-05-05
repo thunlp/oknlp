@@ -31,7 +31,7 @@ def main():
             ]
         },
         ext_modules=[
-            setuptools.Extension("ink._C.thulac",
+            setuptools.Extension("oknlp._C.thulac",
                 extra_compile_args=["-O2","-Wall","-std=c++11"],
                 sources = ["csrc/thulac/thulac_cls.cc"],
                 include_dirs = [
