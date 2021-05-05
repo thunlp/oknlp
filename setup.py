@@ -1,7 +1,7 @@
 import setuptools
 from tools import get_requirements, get_readme, get_version
 
-PACKAGE_SHORT_NAME = "ink"
+PACKAGE_SHORT_NAME = "oknlp"
 
 
 def main():
@@ -10,7 +10,7 @@ def main():
         version=get_version(),
         author="THUNLP",
         author_email="thunlp@gmail.com",
-        description="ink",
+        description="OKNLP",
         long_description=get_readme(),
         long_description_content_type="text/markdown",
         url="https://github.com/thunlp/ink",
