@@ -1,11 +1,11 @@
 PosTagging
 ===========
 
-.. autoclass:: ink.postagging.BasePosTagging
+.. autoclass:: oknlp.postagging.BasePosTagging
     :members: __call__
 
-.. autoclass:: ink.postagging.BertPosTagging
+.. autoclass:: oknlp.postagging.BertPosTagging
 
-.. autofunction:: ink.postagging.get_pos_tagging
+.. autofunction:: oknlp.postagging.get_by_name
 
-.. autofunction:: ink.postagging.get_all_pos_tagging
+.. autofunction:: oknlp.postagging.get_all

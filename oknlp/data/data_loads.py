@@ -4,7 +4,7 @@ import requests
 import zipfile
 import logging
 from tqdm import tqdm
-from ink.data.resources import get_resouce_info
+from .resources import get_resouce_info
 
 logger = logging.Logger(__name__)
 

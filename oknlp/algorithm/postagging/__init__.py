@@ -3,7 +3,7 @@ from .BasePosTagging import BasePosTagging
 from .bert_postagging import BertPosTagging
 
 
-def get_pos_tagging(name: str = "") -> BasePosTagging:
+def get_by_name(name: str = "") -> BasePosTagging:
     """根据条件获取一个PosTagging类的实例，无法根据条件获取时返回BertPosTagging()
 
     :param str name: PosTagging类使用到的方法
@@ -20,7 +20,7 @@ def get_pos_tagging(name: str = "") -> BasePosTagging:
     return BertPosTagging()
 
 
-def get_all_pos_tagging() -> List[BasePosTagging]:
+def get_all() -> List[BasePosTagging]:
     """获取所有PosTagging类的实例
     """
     return [BertPosTagging()]

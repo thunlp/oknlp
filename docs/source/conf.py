@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.abspath('./../../'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'ink'
+project = 'oknlp'
 copyright = '2021, THUNLP'
 author = 'THUNLP'
 
@@ -47,4 +47,4 @@ html_theme = 'sphinx_rtd_theme'
 # so a file named "default.css" will overwrite the builtin "default.css".
 # html_static_path = ['_static']
 
-autodoc_mock_imports = ["ink._C.thulac"]
+autodoc_mock_imports = ["oknlp._C.thulac"]

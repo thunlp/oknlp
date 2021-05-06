@@ -3,12 +3,13 @@ import yaml
 
 
 HOME = os.path.expanduser("~")
-CONFIG_FILE = ".ink.config.yaml"
+CONFIG_FILE = ".oknlp.config.yaml"
 DEFAULT_CONFIG = {
-    "path": [os.path.join(HOME, ".ink")],
+    "path": [os.path.join(HOME, ".oknlp")],
     "source": "https://data.thunlp.org/ink/",
     "default_device": "cpu"
 }
+
 
 class Config:
     """
