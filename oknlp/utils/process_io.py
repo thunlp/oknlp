@@ -1,18 +1,21 @@
 import string
 
+ch_punc = r"！？｡＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［＼］＾＿｀｛｜｝～｟｠｢｣､、〃》「」『』【】〔〕〖〗〘〙〚〛〜〝〞〟〰〾〿–—‘’‛“”„‟…‧﹏."
+en_punc = string.punctuation
+punc = set(ch_punc + en_punc)
+
 
 def split_text_by_punc(text, max_length):
-    """分割一个字符串，分割后的每个字符串长度均不大于max_length，返回分割后的字符串列表
+    """（用标点符号）分割一个字符串，分割后的每个字符串长度均不大于max_length，返回分割后的字符串列表
     """
-    if len(text) <= max_length:
-        return [text]
-    ch_punc = r"！？｡＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［＼］＾＿｀｛｜｝～｟｠｢｣､、〃》「」『』【】〔〕〖〗〘〙〚〛〜〝〞〟〰〾〿–—‘’‛“”„‟…‧﹏."
-    en_punc = string.punctuation
-    punc = set(ch_punc + en_punc)
-    for i in range(len(text) - 1, -1, -1):
-        if text[i] in punc:
-            return split_text_by_punc(text[:i], max_length) + [text[i]] + split_text_by_punc(text[i+1:], max_length)
-    return [text[i:i+max_length] for i in range(0, len(text), max_length)]
+    reversed_split_text_list = []
+    begin, end = len(text) - 1, len(text)
+    while begin >= 0:
+        if end - begin >= max_length or text[begin] in punc or begin == 0:
+            reversed_split_text_list.append(text[begin: end])
+            end = begin
+        begin -= 1
+    return reversed_split_text_list[::-1]
 
 
 def split_text_list(text_list, max_length):
