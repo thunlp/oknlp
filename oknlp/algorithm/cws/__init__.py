@@ -28,4 +28,4 @@ def get_by_name(name: str = "", **kwargs) -> BaseCWS:
 def get_all(**kwargs) -> List[BaseCWS]:
     """获取所有CWS类的实例
     """
-    return [BertCWS(**kwargs)]#, THUlacCWS(**kwargs)]
+    return [BertCWS(**kwargs), THUlacCWS(**kwargs)]
