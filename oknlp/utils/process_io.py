@@ -8,14 +8,20 @@ punc = set(ch_punc + en_punc)
 def split_text_by_punc(text, max_length):
     """（用标点符号）分割一个字符串，分割后的每个字符串长度均不大于max_length，返回分割后的字符串列表
     """
-    reversed_split_text_list = []
-    begin, end = len(text) - 1, len(text)
-    while begin >= 0:
-        if end - begin >= max_length or text[begin] in punc or begin == 0:
-            reversed_split_text_list.append(text[begin: end])
-            end = begin
-        begin -= 1
-    return reversed_split_text_list[::-1]
+    range_list = []
+    begin, end = 0, 0
+    while end <= len(text):
+        if end - begin == max_length or text[end] in punc or end == len(text):
+            range_list.append((begin, end))
+            begin = end
+        end += 1
+    start = 0
+    split_text_list = []
+    for (begin, end) in range_list:
+        if end - start > max_length:
+            split_text_list.append(text[start: begin])
+            start = begin
+    split_text_list.append(text[start:])
 
 
 def split_text_list(text_list, max_length):
