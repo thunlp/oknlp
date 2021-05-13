@@ -7,7 +7,8 @@ CONFIG_FILE = ".oknlp.config.yaml"
 DEFAULT_CONFIG = {
     "path": [os.path.join(HOME, ".oknlp")],
     "source": "https://data.thunlp.org/ink/",
-    "default_device": "cpu"
+    "default_device": "cpu",
+    "enable_tensorrt": True
 }
 
 
@@ -23,7 +24,7 @@ class Config:
         self.path = DEFAULT_CONFIG["path"]
         self.source = DEFAULT_CONFIG["source"]
         self.default_device = DEFAULT_CONFIG["default_device"]
-
+        self.enable_tensorrt = DEFAULT_CONFIG["enable_tensorrt"] 
         self.set_config_from_file(HOME)
         self.set_config_from_file("")
         self.create_default_config_file()
