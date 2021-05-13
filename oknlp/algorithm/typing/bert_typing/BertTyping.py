@@ -33,7 +33,7 @@ class BertTyping(BaseTyping):
     """使用Bert模型实现的Typing算法
     """
     def __init__(self, device=None):
-        typ_path = load('typ')
+        typ_path = load('typ_bert')
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')
         self.tokenizer.add_special_tokens({'additional_special_tokens': ["<ent>", "</ent>"]})
         self.types = json.loads(open(os.path.join(typ_path, 'types.json'), 'r').read())
