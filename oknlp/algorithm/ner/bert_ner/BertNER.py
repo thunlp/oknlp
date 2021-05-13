@@ -18,7 +18,7 @@ class BertNER(BaseNER):
     """使用Bert模型实现的NER算法
     """
     def __init__(self, device=None):
-        self.ner_path = load('ner')
+        self.ner_path = load('ner_bert')
         self.model = Model()
         self.model.expand_to(len(labels), device)
         if device is None:

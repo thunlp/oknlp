@@ -18,7 +18,7 @@ class BertCWS(BaseCWS):
     """使用Bert模型实现的CWS算法
     """
     def __init__(self, device=None):
-        self.cws_path = load('cws')
+        self.cws_path = load('cws_bert')
         self.model = Model()
         self.model.expand_to(len(labels), device)
         if device is None:
