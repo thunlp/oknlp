@@ -16,7 +16,7 @@ class BertPosTagging(BaseAlgorithm):
     """使用Bert模型实现的PosTagging算法
     """
     def __init__(self, device=None):
-        pos_path = load('pos')
+        pos_path = load('pos_bert')
         self.model = BertLinear(classlist)
         checkpoint = torch.load(os.path.join(pos_path, "params.ckpt"), map_location=lambda storage, loc: storage)
         self.model.load_state_dict(checkpoint)
