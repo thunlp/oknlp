@@ -1,18 +1,32 @@
 import string
 
+ch_punc = r"！？｡＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［＼］＾＿｀｛｜｝～｟｠｢｣､、〃》「」『』【】〔〕〖〗〘〙〚〛〜〝〞〟〰〾〿–—‘’‛“”„‟…‧﹏."
+en_punc = string.punctuation
+punc = set(ch_punc + en_punc)
+
 
 def split_text_by_punc(text, max_length):
-    """分割一个字符串，分割后的每个字符串长度均不大于max_length，返回分割后的字符串列表
+    """（用标点符号）分割一个字符串，分割后的每个字符串长度均不大于max_length，返回分割后的字符串列表
     """
     if len(text) <= max_length:
         return [text]
-    ch_punc = r"！？｡＂＃＄％＆＇（）＊＋，－／：；＜＝＞＠［＼］＾＿｀｛｜｝～｟｠｢｣､、〃》「」『』【】〔〕〖〗〘〙〚〛〜〝〞〟〰〾〿–—‘’‛“”„‟…‧﹏."
-    en_punc = string.punctuation
-    punc = set(ch_punc + en_punc)
-    for i in range(len(text) - 1, -1, -1):
-        if text[i] in punc:
-            return split_text_by_punc(text[:i], max_length) + [text[i]] + split_text_by_punc(text[i+1:], max_length)
-    return [text[i:i+max_length] for i in range(0, len(text), max_length)]
+    # 先使用标点进行分割
+    range_list = []
+    begin, end = 0, 0
+    while end <= len(text):
+        if end == len(text) or end - begin == max_length or text[end] in punc:
+            range_list.append((begin, end))
+            begin = end
+        end += 1
+    # 再合并小的范围
+    start = 0
+    split_text_list = []
+    for (begin, end) in range_list:
+        if end - start > max_length:
+            split_text_list.append(text[start: begin])
+            start = begin
+    split_text_list.append(text[start:])
+    return split_text_list
 
 
 def split_text_list(text_list, max_length):
