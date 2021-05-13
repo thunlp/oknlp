@@ -1,6 +1,6 @@
-name: typ
+name: typ_bert
 version: 1
-path: "typ.zip"
+path: "typ_bert.zip"
 files:
   - "types.json"
   - "typing.pth"

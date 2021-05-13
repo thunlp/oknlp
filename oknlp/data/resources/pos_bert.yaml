@@ -1,6 +1,6 @@
-name: pos
+name: pos_bert
 version: 1
-path: "pos.zip"
+path: "pos_bert.zip"
 files:
   - "params.ckpt"           
 description: PosTagging模型 
