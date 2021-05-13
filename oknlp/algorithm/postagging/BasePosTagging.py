@@ -15,16 +15,16 @@ class BasePosTagging(BaseAlgorithm):
 
     def __call__(self, sents: List[str]) -> List[List[Tuple[str, str]]]:
         """
-        Args:
-            sents: List[str]
-                表示需要进行词性标注的字符串列表，例如['清华大学自然语言处理与社会人文计算实验室', '今天天气真好']
-
-        Returns:
-            List[List[Tuple[str, str]]]
-                对于每一个输入的字符串，返回一个List[Tuple[str, str]]，Tuple[0]表示一个词，Tuple[1]表示这个词对应的词性，例如
-                [
-                    [('清华', 'NR'), ('大学', 'NN'), ('自然', 'NN'), ('语言', 'NN'), ('处理', 'NN'), ('与', 'CC'), ('社会', 'NN'), ('人文', 'NN'), ('计算', 'NN'), ('实验室', 'NN')],
-                    [('今天', 'NT'), ('天气', 'NN'), ('真', 'AD'), ('好', 'VA')]
-                ]
+        :param List[str] sents: 需要进行词性标注的字符串列表
+        :return: List[List[Tuple[str, str]]] 每句话中每个词及其对应的词性
+        :example:
+            >>> import oknlp
+            >>> postagging = oknlp.postagging.get_by_name()
+            >>> sents = ['我爱北京天安门', '今天天气真好']
+            >>> postagging(sents)
+            [
+                [('我', 'PN'), ('爱', 'VV'), ('北京', 'NR'), ('天安门', 'NR')],
+                [('今天', 'NT'), ('天气', 'NN'), ('真', 'AD'), ('好', 'VA')]
+            ]
         """
         return super().__call__(sents)

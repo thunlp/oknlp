@@ -15,12 +15,13 @@ class BaseCWS(BaseAlgorithm):
 
     def __call__(self, sents: List[str]) -> List[List[str]]:
         """
-        Args:
-            sents: List[str]
-                表示需要进行分词的字符串列表，例如['今天天气真好', '我爱北京天安门']
-
-        Returns:
-            List[List[str]]
-                表示每句话分词后的结果（词语间用空格隔开），例如['今天', '天气', '真', '好', '我', '爱', '北京', '天安门']
+        :param List[str] sents: 需要进行分词的字符串列表
+        :return: List[List[str]] 每句话分词后的结果
+        :example:
+            >>> import oknlp
+            >>> cws = oknlp.cws.get_by_name()
+            >>> sents = ['我爱北京天安门']
+            >>> cws(sents)
+            [['我', '爱', '北京', '天安门']]
         """
         return super().__call__(sents)

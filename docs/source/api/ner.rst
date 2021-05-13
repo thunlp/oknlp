@@ -1,11 +1,11 @@
 NamedEntityRecognition
 =======================
 
-.. autoclass:: ink.algorithm.ner.BaseNER.BaseNER
+.. autoclass:: oknlp.ner.BaseNER
     :members: __call__
 
-.. autoclass:: ink.algorithm.ner.BertNER
+.. autoclass:: oknlp.ner.BertNER
 
-.. autofunction:: ink.algorithm.ner.get_ner
+.. autofunction:: oknlp.ner.get_by_name
 
-.. autofunction:: ink.algorithm.ner.get_all_ner
+.. autofunction:: oknlp.ner.get_all

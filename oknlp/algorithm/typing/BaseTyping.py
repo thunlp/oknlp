@@ -15,14 +15,13 @@ class BaseTyping(BaseAlgorithm):
 
     def __call__(self, sents: List[Tuple[str, Tuple[int, int]]]) -> List[List[Tuple[str, float]]]:
         """
-        Args:
-            sents: List[Tuple[str, list]]
-                每一个输入都是一个[str, Tuple[int, int]]元组，第一个参数是上下文字符串，第二个参数是实体的提及位置[begin, end)，例如，
-                [("3月15日,北方多地正遭遇近10年来强度最大、影响范围最广的沙尘暴。", (30, 33))]
-
-        Returns:
-            List[List[Tuple[str, float]]]
-                对每一个输入，输出所有可能的类型及对应的分数，例如，
-                [[('object', 0.35983458161354065), ('event', 0.8602959513664246), ('attack', 0.12778696417808533), ('disease', 0.2171688675880432)]]
+        :param List[Tuple[str,Tuple[int,int]]] sents: 上下文，实体提及位置[begin, end)的列表
+        :return: List[List[Tuple[str, float]]] 每一个实体所有可能的类型及对应的分数
+        :example:
+            >>> import oknlp
+            >>> typing = oknlp.typing.get_by_name()
+            >>> sents = [("3月15日,北方多地正遭遇近10年来强度最大、影响范围最广的沙尘暴。", (30, 33))]
+            >>> typing(sents)
+            [[('object', 0.26066625118255615), ('event', 0.9411928653717041)]]
         """
         return super().__call__(sents)

@@ -1,11 +1,11 @@
 Typing
 ======
 
-.. autoclass:: ink.algorithm.typing.BaseTyping.BaseTyping
+.. autoclass:: oknlp.typing.BaseTyping
     :members: __call__
 
-.. autoclass:: ink.algorithm.typing.BertTyping
+.. autoclass:: oknlp.typing.BertTyping
 
-.. autofunction:: ink.algorithm.typing.get_typing
+.. autofunction:: oknlp.typing.get_by_name
 
-.. autofunction:: ink.algorithm.typing.get_all_typing
+.. autofunction:: oknlp.typing.get_all

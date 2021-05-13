@@ -3,12 +3,11 @@
 
 .. code-block:: python
 
-    from ink.config.config import config
-    from ink.algorithm.cws import get_cws
+    import oknlp
 
 
-    config.default_device = "cuda: 1"
-    cws = get_cws(name="bert")
+    cws = oknlp.cws.get_by_name(name="bert")
+    cws.to("cuda:1")
     sents = ['我爱北京天安门']
     result = cws(sents)
-    # result == ['我 爱 北京 天安门']
+    # result == [['我', '爱', '北京', '天安门']]

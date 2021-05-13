@@ -1,13 +1,13 @@
 ChineseWordSegmentation
 ==============================
 
-.. autoclass:: ink.algorithm.cws.BaseCWS.BaseCWS
+.. autoclass:: oknlp.cws.BaseCWS
     :members: __call__
 
-.. autoclass:: ink.algorithm.cws.BertCWS
+.. autoclass:: oknlp.cws.BertCWS
 
-.. autoclass:: ink.algorithm.cws.THUlacCWS
+.. autoclass:: oknlp.cws.THUlacCWS
 
-.. autofunction:: ink.algorithm.cws.get_cws
+.. autofunction:: oknlp.cws.get_by_name
 
-.. autofunction:: ink.algorithm.cws.get_all_cws
+.. autofunction:: oknlp.cws.get_all
