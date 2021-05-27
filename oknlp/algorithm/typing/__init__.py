@@ -1,6 +1,6 @@
 from typing import List
 from .BaseTyping import BaseTyping
-from .bert_typing import BertTyping
+from .bert_typing import BertTyping, onnxBertTyping
 
 
 def get_by_name(name: str = "") -> BaseTyping:

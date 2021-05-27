@@ -1,6 +1,6 @@
 from typing import List
 from .BaseNER import BaseNER
-from .bert_ner import BertNER
+from .bert_ner import BertNER, onnxBertNER
 
 
 def get_by_name(name: str = "") -> BaseNER:

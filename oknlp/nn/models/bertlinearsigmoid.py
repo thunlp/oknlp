@@ -20,13 +20,14 @@ class BertLinearSigmoid(nn.Module):
 
         x = self.bert(x, attention_mask=mask_tensor)
         x = x['last_hidden_state']
+        pos_ = pos.reshape(-1, 1, 1).repeat(1, 1, x.size(2))
+        x_ = torch.gather(x, 1 , pos_).squeeze(dim=1)
+        # cat_list = []
+        # for i in range(n):
+        #     cat_list.append(x[i, pos[i]:pos[i] + 1, :])  
+        # x = torch.cat(cat_list, 0)
 
-        cat_list = []
-        for i in range(n):
-            cat_list.append(x[i, pos[i]:pos[i] + 1, :])
-        x = torch.cat(cat_list, 0)
-
-        x = self.predict(x)
+        # print((x - x_).abs().sum())
+        x = self.predict(x_)
         x = self.sig(x)
-
         return x

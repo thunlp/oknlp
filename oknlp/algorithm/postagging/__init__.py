@@ -1,6 +1,6 @@
 from typing import List
 from .BasePosTagging import BasePosTagging
-from .bert_postagging import BertPosTagging
+from .bert_postagging import BertPosTagging, onnxBertPosTagging
 
 
 def get_by_name(name: str = "") -> BasePosTagging:

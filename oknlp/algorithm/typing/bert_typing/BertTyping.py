@@ -9,7 +9,7 @@ from ....data import load
 
 
 class Dataset(Data.Dataset):
-    def __init__(self, sents, tokenizer, max_length=128):
+    def __init__(self, sents, tokenizer, max_length=34):
         self.sents = sents
         self.tokenizer = tokenizer
         self.max_length = max_length
@@ -22,7 +22,7 @@ class Dataset(Data.Dataset):
         if span[0] > self.max_length:
             text = text[span[0]:]
             span = (0, span[1] - span[0])
-        text = text[:span[0]] + '<ent>' + text[span[0]: span[1]] + '</ents>' + text[span[1]:]
+        text = text[:span[0]] + '<ent>' + text[span[0]: span[1]] + '</ent>' + text[span[1]:]
         pos = [text.index('<ent>')]
         text = self.tokenizer.convert_tokens_to_ids(self.tokenizer.tokenize(text))[:self.max_length]
         text += [0] * (self.max_length - len(text))
@@ -53,7 +53,7 @@ class BertTyping(BaseTyping):
         dataloader = Data.DataLoader(dataset, batch_size=8, num_workers=0)
         for text, pos in dataloader:
             with torch.no_grad():
-                outs = self.model(text.to(self.device), pos)
+                outs, x_ = self.model(text.to(self.device), pos)
                 outs = outs.cpu().tolist()
             for out in outs:
                 result = []
@@ -61,4 +61,4 @@ class BertTyping(BaseTyping):
                     if score > 0.1:
                         result.append((self.types[i], score))
                 results.append(result)
-        return results
+        return results,x_.numpy()
