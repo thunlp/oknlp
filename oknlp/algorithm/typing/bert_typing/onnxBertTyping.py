@@ -26,29 +26,29 @@ class onnxBertTyping:
         self.sess = rt.InferenceSession("typing.bert.onnx",sess_options)
         self.input_name = self.sess.get_inputs()[0].name
         self.pos = self.sess.get_inputs()[1].name 
+        self.att_name = self.sess.get_inputs()[2].name
         self.label_name = self.sess.get_outputs()[0].name
-        self.tensor = self.sess.get_outputs()[1].name
-
     def preprocess(self, x, *args, **kwargs):
         text, span = x
         text = text[:span[0]] + '<ent>' + text[span[0]: span[1]] + '</ent>' + text[span[1]:]
-        pos = text.index('<ent>')
         sx = self.tokenizer.convert_tokens_to_ids(self.tokenizer.tokenize(text))
-        return sx, pos
+        sy = [text.index('<ent>')]
+        sat = [1] * (len(sx)) 
+        return sx, sy , sat
+
 
     def postprocess(self, x, *args, **kwargs):
         result = []
         for i, score in enumerate(x):
-            if score > 0.1:
+            if float(score) > 0.1:
                 result.append((self.types[i], score))
         return result
+
     def inference(self, batch):
-        x = []
-        pos = []
-        for i in batch:
-            x.append(i[0])
-            pos.append(i[1])
-        input_feed = {self.input_name: np.array(x).astype(np.int32),self.pos: np.array(pos).astype(np.int64)}#, self.pos:np.array(pos).astype(np.int64)}
-        out,x_ = self.sess.run([self.label_name, self.tensor], input_feed)
-        return out
+        x, y, at = np.stack(tuple(batch),axis=1)
+        input_feed = {self.input_name: [np.array(i).astype(np.int32) for i in x], 
+            self.pos: [np.array(i).astype(np.int64) for i in y], 
+            self.att_name: [np.array(i).astype(np.int64) for i in y]}
+        pred_onx = self.sess.run([self.label_name], input_feed)[0]
+        return pred_onx
     

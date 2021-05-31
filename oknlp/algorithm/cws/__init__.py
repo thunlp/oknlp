@@ -1,6 +1,5 @@
 from typing import List
 from .BaseCWS import BaseCWS
-from .bert_cws import BertCWS
 from .thulac_cws import THUlacCWS
 from .bert_cws import onnxBertCWS
 
@@ -19,13 +18,13 @@ def get_by_name(name: str = "") -> BaseCWS:
     """
     name = name.lower()
     if name == "bert":
-        return BertCWS()
+        return onnxBertCWS()
     if name == "thulac":
         return THUlacCWS()
-    return BertCWS()
+    return onnxBertCWS()
 
 
 def get_all() -> List[BaseCWS]:
     """获取所有CWS类的实例
     """
-    return [BertCWS(), THUlacCWS()]
+    return [onnxBertCWS(), THUlacCWS()]

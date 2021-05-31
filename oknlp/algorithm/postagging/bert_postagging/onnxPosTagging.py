@@ -6,32 +6,24 @@ from .evaluate_funcs import format_output
 import kara_storage
 import numpy as np
 import onnxruntime as rt
+from ....data import get_provider,load,get_model
 
 class onnxBertPosTagging:
     """使用Bert模型实现的PosTagging算法
     """
 
-    def __init__(self, *args, **kwargs):
-        if not os.path.exists("postagging/postagging.bert.opt.onnx"):
-            storage = kara_storage.KaraStorage("https://data.thunlp.org/ink")
-            storage.load_directory("", "postagging", "postagging", "gpu")
-
+    def __init__(self, device, *args, **kwargs):
+        if device == None:
+           device = 'cpu'
+        postagging_path = load('postagging.bert',device)
+        providers = get_provider(device)
         self.tokenizer = BertTokenizer.from_pretrained("bert-base-chinese")
-        providers = [
-                ('CUDAExecutionProvider', {
-                    'device_id': 0,
-                    'arena_extend_strategy': 'kNextPowerOfTwo',
-                    'cudnn_conv_algo_search': 'EXHAUSTIVE',
-                }),
-                'CPUExecutionProvider',
-            ]
         sess_options = rt.SessionOptions()
         sess_options.graph_optimization_level = rt.GraphOptimizationLevel.ORT_ENABLE_ALL
-        self.sess = rt.InferenceSession("postagging/postagging.bert.opt.onnx",sess_options)
+        self.sess = rt.InferenceSession(get_model(postagging_path),sess_options, providers=providers)
         self.input_name = self.sess.get_inputs()[0].name
         self.att_name =self.sess.get_inputs()[1].name 
         self.label_name = self.sess.get_outputs()[0].name
-
 
     def preprocess(self, x, *args, **kwargs):
         tokens=self.tokenizer.tokenize(x)

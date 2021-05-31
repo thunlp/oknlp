@@ -5,26 +5,19 @@ from transformers import BertTokenizer
 import kara_storage
 import numpy as np
 import onnxruntime as rt
+from ....data import get_provider,load,get_model
 
 labels = reduce(lambda x,y:x+y, [[f"{kd}-{l}" for kd in ('B','I','O')] for l in ('SEG',)])
-
 class onnxBertCWS:
-    def __init__(self, *args, **kwargs):
-        if not os.path.exists("cws/cws.bert.opt.onnx"):
-            storage = kara_storage.KaraStorage("https://data.thunlp.org/ink")
-            storage.load_directory("", "cws", "cws", "gpu")
+    def __init__(self, device = None, *args, **kwargs):
+        if device == None:
+            device = 'cpu'
+        cws_path = load('cws.bert', device)
+        providers = get_provider(device)
         self.tokenizer = BertTokenizer.from_pretrained("bert-base-chinese")
-        providers = [
-                ('CUDAExecutionProvider', {
-                    'device_id': 0,
-                    'arena_extend_strategy': 'kNextPowerOfTwo',
-                    'cudnn_conv_algo_search': 'EXHAUSTIVE',
-                }),
-                'CPUExecutionProvider',
-            ]
         sess_options = rt.SessionOptions()
         sess_options.graph_optimization_level = rt.GraphOptimizationLevel.ORT_ENABLE_ALL
-        self.sess = rt.InferenceSession("cws/cws.bert.opt.onnx",sess_options)
+        self.sess = rt.InferenceSession(get_model(cws_path),sess_options, providers=providers)
         self.input_name = self.sess.get_inputs()[0].name
         self.att_name =self.sess.get_inputs()[1].name 
         self.label_name = self.sess.get_outputs()[0].name

@@ -1,6 +1,6 @@
 from typing import List
 from .BaseTyping import BaseTyping
-from .bert_typing import BertTyping, onnxBertTyping
+from .bert_typing import onnxBertTyping
 
 
 def get_by_name(name: str = "") -> BaseTyping:
@@ -16,11 +16,11 @@ def get_by_name(name: str = "") -> BaseTyping:
     """
     name = name.lower()
     if name == "bert":
-        return BertTyping()
-    return BertTyping()
+        return onnxBertTyping()
+    return onnxBertTyping()
 
 
 def get_all() -> List[BaseTyping]:
     """获取所有Typing类的实例
     """
-    return [BertTyping()]
+    return [onnxBertTyping()]

@@ -1,6 +1,6 @@
 from typing import List
 from .BaseNER import BaseNER
-from .bert_ner import BertNER, onnxBertNER
+from .bert_ner import onnxBertNER
 
 
 def get_by_name(name: str = "") -> BaseNER:
@@ -16,11 +16,11 @@ def get_by_name(name: str = "") -> BaseNER:
     """
     name = name.lower()
     if name == "bert":
-        return BertNER()
-    return BertNER()
+        return onnxBertNER()
+    return onnxBertNER()
 
 
 def get_all() -> List[BaseNER]:
     """获取所有NER类的实例
     """
-    return [BertNER()]
+    return [onnxBertNER()]

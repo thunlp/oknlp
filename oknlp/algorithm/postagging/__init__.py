@@ -1,6 +1,6 @@
 from typing import List
 from .BasePosTagging import BasePosTagging
-from .bert_postagging import BertPosTagging, onnxBertPosTagging
+from .bert_postagging import onnxBertPosTagging
 
 
 def get_by_name(name: str = "") -> BasePosTagging:
@@ -16,11 +16,11 @@ def get_by_name(name: str = "") -> BasePosTagging:
     """
     name = name.lower()
     if name == "bert":
-        return BertPosTagging()
-    return BertPosTagging()
+        return onnxBertPosTagging()
+    return onnxBertPosTagging()
 
 
 def get_all() -> List[BasePosTagging]:
     """获取所有PosTagging类的实例
     """
-    return [BertPosTagging()]
+    return [onnxBertPosTagging()]
