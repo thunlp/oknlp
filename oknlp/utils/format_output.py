@@ -4,16 +4,10 @@
 import warnings
 
 
-def format_output(sents, pred, classlist):
-    pred = [classlist[p] for p in pred]
+def format_output(pred, classlist):
+    pred = [classlist[p] for p in pred[1:-1]]
     boxes = get_entities(pred)
-    box = [(b[0], b[1]-1, b[2]-1) for b in boxes] 
-   # boxes = [[(b[0], b[1]-1, b[2]-1) for b in box] for box in boxes]
-    
-    # for sent, box in zip(sents, boxes):
-    #     for b in box:
-    #         print(''.join(sent[b[1]:b[2]+1]), end=" ")
-    #     print()
+    box = [(b[0], b[1], b[2]) for b in boxes] 
     return box
 
 

@@ -28,6 +28,7 @@ class onnxBertTyping:
         self.pos = self.sess.get_inputs()[1].name 
         self.att_name = self.sess.get_inputs()[2].name
         self.label_name = self.sess.get_outputs()[0].name
+        
     def preprocess(self, x, *args, **kwargs):
         text, span = x
         text = text[:span[0]] + '<ent>' + text[span[0]: span[1]] + '</ent>' + text[span[1]:]
@@ -48,7 +49,7 @@ class onnxBertTyping:
         x, y, at = np.stack(tuple(batch),axis=1)
         input_feed = {self.input_name: [np.array(i).astype(np.int32) for i in x], 
             self.pos: [np.array(i).astype(np.int64) for i in y], 
-            self.att_name: [np.array(i).astype(np.int64) for i in y]}
+            self.att_name: [np.array(i).astype(np.int32) for i in at]}
         pred_onx = self.sess.run([self.label_name], input_feed)[0]
         return pred_onx
     

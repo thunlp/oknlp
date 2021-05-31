@@ -30,24 +30,18 @@ class onnxBertPosTagging:
         sx = self.tokenizer.convert_tokens_to_ids(['[CLS]'] + tokens + ['[SEP]']) 
         sy = [-1] + [0] * len(tokens) +[-1]
         sat = [1] * (len(tokens) + 2) 
-        return np.array(sx).astype(np.int32), np.array(sy).astype(np.int32), np.array(sat).astype(np.int32)
+        return x, np.array(sx).astype(np.int32), np.array(sy).astype(np.int32), np.array(sat).astype(np.int32)
 
-    def postprocess(self, sent, x, *args, **kwargs):
+    def postprocess(self, x, *args, **kwargs):
         result = []
-        pred, mask = x
+        sent, (pred, mask) = x
         for ((begin, end), tag) in format_output(pred, mask, classlist, dims=1)[1]:
             result.append((sent[begin:end], tag))
         return result
 
     def inference(self, batch):
-        x, y, at = np.stack(tuple(batch),axis=1)
-        mask = y != -1
-        input_feed = {self.input_name: x, self.att_name: at}
-        pred_onx = self.sess.run([self.label_name], input_feed)[0]
-        result = []
-        for i in range(len(mask)):
-            tmp = (np.where(mask, pred_onx, -1)[i],mask[i])
-            result.append(tmp)
-        return result
-
-    
+        input_feed = {self.input_name: [np.array(i[1]).astype(np.int32) for i in batch], 
+            self.att_name: [np.array(i[3]).astype(np.int32) for i in batch]}
+        pred_onx = self.sess.run([self.label_name],input_feed)[0]
+        mask = np.array([i[2] for i in batch]) != -1
+        return list(zip([i[0] for i in batch],list(zip(np.where(mask, np.where(mask, pred_onx, -1).tolist(), -1),mask))))

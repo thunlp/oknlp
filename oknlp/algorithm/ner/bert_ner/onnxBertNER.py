@@ -28,15 +28,16 @@ class onnxBertNER:
         sx = self.tokenizer.convert_tokens_to_ids(['[CLS]'] + tokens + ['[SEP]']) 
         sy = [-1] + [0] * len(tokens) +[-1]
         sat = [1] * (len(tokens) + 2)
-        return np.array(sx).astype(np.int32), np.array(sy).astype(np.int32), np.array(sat).astype(np.int32)
+        return x, sx, sy, sat
 
-    def postprocess(self, x, pred, *args, **kwargs):
-        return [{'type': j[0], 'begin': j[1], 'end': j[2]} for j in format_output(x, pred, labels)]
+    def postprocess(self, x, *args, **kwargs):
+        sent, pred = x
+        return [{'type': j[0], 'begin': j[1], 'end': j[2]} for j in format_output(pred, labels)]
         
     def inference(self, batch):
-        x, y, at = np.stack(tuple(batch),axis=1)
-        mask = y != -1
-        input_feed = {self.input_name: x, self.att_name: at} 
-        pred_onx = self.sess.run(
-                    [self.label_name], input_feed)[0]
-        return np.where(mask, pred_onx, -1).tolist()
+        input_feed = {self.input_name: [np.array(i[1]).astype(np.int32) for i in batch], 
+            self.att_name: [np.array(i[3]).astype(np.int32) for i in batch]}
+        pred_onx = self.sess.run([self.label_name],input_feed)[0]
+        mask = np.array([i[2] for i in batch]) != -1
+        pred_onx = np.where(mask, pred_onx, -1).tolist() 
+        return list(zip([i[0] for i in batch],pred_onx))#合并句子和结果
