@@ -17,7 +17,8 @@ class BertLinearSigmoid(nn.Module):
 
     def forward(self, x, pos, mask_tensor=None):
         x = self.bert(x, mask_tensor)
+        x = x['last_hidden_state']
         pos = pos.reshape(-1, 1, 1).repeat(1, 1, x.size(2))
-        x = torch.gather(x['last_hidden_state'], 1 , pos).squeeze(dim=1)
+        x = torch.gather(x, 1 , pos).squeeze(dim=1)
         x = self.sig(self.predict(x))
         return x
