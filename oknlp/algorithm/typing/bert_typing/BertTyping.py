@@ -32,7 +32,7 @@ class Dataset(Data.Dataset):
 class BertTyping(BaseTyping):
     """使用Bert模型实现的Typing算法
     """
-    def __init__(self, device=None):
+    def infer(self, sents):
         typ_path = load('typ_bert')
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')
         self.tokenizer.add_special_tokens({'additional_special_tokens': ["<ent>", "</ent>"]})
@@ -40,20 +40,12 @@ class BertTyping(BaseTyping):
         self.model = BertLinearSigmoid(len(self.tokenizer))
         self.model.load_state_dict(torch.load(os.path.join(typ_path, 'typing.pth'), map_location=lambda storage, loc: storage))
         self.model.eval()
-
-        super().__init__(device)
-
-    def to(self, device):
-        self.model = self.model.to(device)
-        return super().to(device)
-
-    def __call__(self, sents):
         results = []
         dataset = Dataset(sents, self.tokenizer)
         dataloader = Data.DataLoader(dataset, batch_size=8, num_workers=0)
         for text, pos in dataloader:
             with torch.no_grad():
-                outs = self.model(text.to(self.device), pos)
+                outs = self.model(text, pos)
                 outs = outs.cpu().tolist()
             for out in outs:
                 result = []
