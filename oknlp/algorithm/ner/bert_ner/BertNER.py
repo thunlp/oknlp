@@ -17,23 +17,14 @@ labels = ['O'] + reduce(lambda x, y: x + y, [[f"{kd}-{l}" for kd in ('B', 'I', '
 class BertNER(BaseNER):
     """使用Bert模型实现的NER算法
     """
-    def __init__(self, device=None):
+    def infer(self, sents):
         self.ner_path = load('ner_bert')
         self.model = Model()
-        self.model.expand_to(len(labels), device)
-        if device is None:
-            device = config.default_device
-        self.model.load_state_dict(
-            torch.load(os.path.join(self.ner_path, "ner_bert.ckpt"), map_location=torch.device(device)))
+        self.model.expand_to(len(labels))
+        self.model.load_state_dict(torch.load(os.path.join(self.ner_path, "ner_bert.ckpt"), map_location=lambda storage, loc: storage))
         self.model.eval()
         self.tokenizer = BertTokenizer.from_pretrained("bert-base-chinese")
-        super().__init__(device)
 
-    def to(self, device):
-        self.model = self.model.to(device)
-        return super().to(device)
-
-    def __call__(self, sents):
         self.sents, is_end_list = split_text_list(sents, 126)
         self.test_dataset = Dataset(self.sents, self.tokenizer)
         self.test_loader = Data.DataLoader(self.test_dataset, batch_size=8, num_workers=0)
@@ -51,12 +42,8 @@ class BertNER(BaseNER):
 
     def infer_step(self, batch):
         x, y, at = batch
-        x = x.to(self.device)
-        y = y.to(self.device)
-        at = at.to(self.device)
         with torch.no_grad():
             p = self.model(x, at)
-            p = p.to(self.device)
             mask = y != -1
         return torch.where(mask, p, 0).cpu().tolist(), mask.cpu().tolist()
 
