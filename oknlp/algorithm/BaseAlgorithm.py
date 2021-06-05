@@ -141,8 +141,7 @@ class BaseAlgorithm:
 
     def _reinit_client(self):
         self.__closed = False
-        self._thread_local = threading.local()
-        self._result_dict = {0: {'event': threading.Event(), 'result': None}}
+        self._result_dict = {}
         self._result_dict_lock = threading.Lock()
 
         client_ok = False
