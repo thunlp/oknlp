@@ -1,1 +1,1 @@
-from .onnxBertNER import onnxBertNER 
+from .BertNER import BertNER 

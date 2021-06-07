@@ -12,9 +12,6 @@ class BertSeq(nn.Module):
         self.num_class = 0
         self.cls = nn.Linear(768, self.num_class)
 
-    # def froze_bert(self, bool):
-    #     self.bert.frozen(bool)
-
     def expand_to(self, new_class,device=None):
         old_weight = self.cls.weight.data
         old_bias = self.cls.bias.data

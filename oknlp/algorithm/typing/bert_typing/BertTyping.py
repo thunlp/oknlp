@@ -4,22 +4,27 @@ from transformers import BertTokenizer
 import kara_storage
 import numpy as np
 import onnxruntime as rt
-from ....data import get_provider,load,get_model
+from ..BaseTyping import BaseTyping
+from ....auto_config import get_provider
+from ....data import load,get_model
 
-class onnxBertTyping:
+class BertTyping(BaseTyping):
     """使用Bert模型实现的Typing算法
     """
     def __init__(self, device=None, *args, **kwargs):
-        if device == None:
-           device = 'cpu'
-        typing_path = load('typing.bert',device)
+        super().__init__(*args,**kwargs)
+        providers, fp16_mode = get_provider(device)
+        if not fp16_mode:
+            typing_path = load('typing.bert','cpu')
+        else:
+            typing_path = load('typing.bert','gpu')
         self.tokenizer = BertTokenizer.from_pretrained("bert-base-chinese")
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')
         self.tokenizer.add_special_tokens({'additional_special_tokens': ["<ent>", "</ent>"]})
         self.types = json.loads(open(os.path.join(typing_path, 'types.json'), 'r').read())
         sess_options = rt.SessionOptions()
         sess_options.graph_optimization_level = rt.GraphOptimizationLevel.ORT_ENABLE_ALL
-        self.sess = rt.InferenceSession(get_model(typing_path),sess_options)
+        self.sess = rt.InferenceSession(get_model(typing_path),sess_options,providers=providers)
         self.input_name = self.sess.get_inputs()[0].name
         self.pos = self.sess.get_inputs()[1].name 
         self.att_name = self.sess.get_inputs()[2].name

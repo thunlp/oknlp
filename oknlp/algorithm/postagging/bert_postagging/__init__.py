@@ -1,1 +1,1 @@
-from .onnxPosTagging import onnxBertPosTagging
+from .BertPosTagging import BertPosTagging

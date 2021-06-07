@@ -5,15 +5,19 @@ from transformers import BertTokenizer
 import kara_storage
 import numpy as np
 import onnxruntime as rt
-from ....data import get_provider,load,get_model
+from ..BaseCWS import BaseCWS
+from ....auto_config import get_provider
+from ....data import load, get_model
 
-labels = reduce(lambda x,y:x+y, [[f"{kd}-{l}" for kd in ('B','I','O')] for l in ('SEG',)])
-class onnxBertCWS:
+labels = reduce(lambda x, y: x+y, [[f"{kd}-{l}" for kd in ('B','I','O')] for l in ('SEG',)])
+class BertCWS(BaseCWS):
     def __init__(self, device = None, *args, **kwargs):
-        if device == None:
-            device = 'cpu'
-        cws_path = load('cws.bert', device)
-        providers = get_provider(device)
+        super().__init__(*args,**kwargs)
+        providers, fp16_mode = get_provider(device)
+        if not fp16_mode:
+            cws_path = load('cws.bert', 'cpu')
+        else:
+            cws_path = load('cws.bert', 'gpu') 
         self.tokenizer = BertTokenizer.from_pretrained("bert-base-chinese")
         sess_options = rt.SessionOptions()
         sess_options.graph_optimization_level = rt.GraphOptimizationLevel.ORT_ENABLE_ALL

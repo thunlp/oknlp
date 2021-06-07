@@ -1,1 +1,1 @@
-from .onnxBertTyping import onnxBertTyping
+from .BertTyping import BertTyping

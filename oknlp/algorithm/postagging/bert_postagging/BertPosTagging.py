@@ -6,17 +6,21 @@ from .evaluate_funcs import format_output
 import kara_storage
 import numpy as np
 import onnxruntime as rt
-from ....data import get_provider,load,get_model
+from ..BasePosTagging import BasePosTagging
+from ....auto_config import get_provider
+from ....data import load,get_model
 
-class onnxBertPosTagging:
+class BertPosTagging(BasePosTagging):
     """使用Bert模型实现的PosTagging算法
     """
 
     def __init__(self, device, *args, **kwargs):
-        if device == None:
-           device = 'cpu'
-        postagging_path = load('postagging.bert',device)
-        providers = get_provider(device)
+        super().__init__(*args,**kwargs)
+        providers, fp16_mode = get_provider(device)
+        if not fp16_mode:
+            postagging_path = load('postagging.bert','cpu')
+        else:
+            postagging_path = load('postagging.bert','gpu')
         self.tokenizer = BertTokenizer.from_pretrained("bert-base-chinese")
         sess_options = rt.SessionOptions()
         sess_options.graph_optimization_level = rt.GraphOptimizationLevel.ORT_ENABLE_ALL

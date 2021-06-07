@@ -1,1 +1,1 @@
-from .onnxBertCWS import onnxBertCWS 
+from .BertCWS import BertCWS 
