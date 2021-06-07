@@ -1,5 +1,4 @@
 from .gpu_scheduler import get_gpu_info, get_gpu_utilization, get_gpumem_utilization
-import py3nvml
 
 def get_provider(device=None):
     d_cuda = ('CUDAExecutionProvider',{

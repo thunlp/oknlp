@@ -207,7 +207,7 @@ class BaseAlgorithm:
     def __call__(self, sents):
         '''线程根据自己的id，（获取client锁后）用client发数据，等待event，获取结果
         '''
-        thread_id = threading.get_native_id()
+        thread_id = threading.get_ident()
         with self._result_dict_lock:
             if thread_id not in self._result_dict:
                 self._result_dict[thread_id] = {'event': threading.Event(), 'result': None}

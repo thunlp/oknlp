@@ -102,8 +102,3 @@ def get_gpumem_utilization(allocated_gpus=[]):
         mem_rates.append(tmp)
     py3nvml.py3nvml.nvmlShutdown()
     return mem_rates
-
-if __name__ == "__main__":
-    print(get_gpu_info())
-    print(get_gpu_utilization())
-    print(get_gpumem_utilization())
