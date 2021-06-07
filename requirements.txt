@@ -6,3 +6,4 @@ transformers>=4
 seqeval
 kara-storage
 onnxruntime
+py3nvml
