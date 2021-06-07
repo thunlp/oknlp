@@ -177,10 +177,12 @@ class BaseAlgorithm:
 
     def __getstate__(self):
         need_reinit_client = hasattr(self, 'client')
-        return (self.batch_size, self.__address, self.__family, need_reinit_client)
+        if not hasattr(self, "config"):
+            self.config = {}
+        return (self.batch_size, self.__address, self.__family, need_reinit_client, self.config)
 
     def __setstate__(self, state):
-        (self.batch_size, self.__address, self.__family, need_reinit_client) = state
+        (self.batch_size, self.__address, self.__family, need_reinit_client, self.config) = state
         if need_reinit_client:
             self._reinit_client()
 
