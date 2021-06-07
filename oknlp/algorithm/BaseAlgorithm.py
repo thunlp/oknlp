@@ -253,8 +253,7 @@ class BaseAlgorithm:
                 except Empty:
                     # 2. Queue is empty
                     break
-            batch_data = self.infer(batch_data)
-
+            batch_data = self.inference(batch_data)
             for info, data in zip(batch_info, batch_data):
                 serial_idx, idx = info
                 to_queue.put((serial_idx, idx, data))
@@ -272,7 +271,7 @@ class BaseAlgorithm:
         """
         return x
 
-    def infer(self, batch):
+    def inference(self, batch):
         """对一组输入进行推理
         """
         return batch
