@@ -23,16 +23,15 @@ def get_gpu_info(allocated_gpus=[]):
         assert num_gpus > max(allocated_gpus)
     gpu_info = []
     for gpuid in allocated_gpus:
-        tmp = {}
         try:
             h = py3nvml.py3nvml.nvmlDeviceGetHandleByIndex(gpuid)
         except:
             continue
-        tmp['gpu_id'] = gpuid
-        tmp['gpu_info'] = py3nvml.py3nvml.nvmlDeviceGetName(h)
-        tmp['gpu_compt'] = py3nvml.utils.try_get_info(py3nvml.py3nvml.nvmlDeviceGetCudaComputeCapability, h,
-                             ['something'])
-        gpu_info.append(tmp)
+        gpu_info.append({
+            'gpu_id' : gpuid,
+            'gpu_info' : py3nvml.py3nvml.nvmlDeviceGetName(h),
+            'gpu_compt': py3nvml.utils.try_get_info(py3nvml.py3nvml.nvmlDeviceGetCudaComputeCapability, h,['something'])
+            })
     py3nvml.py3nvml.nvmlShutdown()
     return gpu_info
 
@@ -57,16 +56,16 @@ def get_gpu_utilization(allocated_gpus=[]):
         assert num_gpus > max(allocated_gpus)
     gpu_rates = []
     for gpuid in allocated_gpus:
-        tmp = {}
         try:
             h = py3nvml.py3nvml.nvmlDeviceGetHandleByIndex(gpuid)
         except:
             continue
         rate = py3nvml.utils.try_get_info(py3nvml.py3nvml.nvmlDeviceGetUtilizationRates, h,
                              ['something'])
-        tmp['gpu_id'] = gpuid
-        tmp['gpu_rate'] = rate.gpu
-        gpu_rates.append(tmp)
+        gpu_rates.append({
+            'gpu_id': gpuid,
+            'gpu_rate': rate.gpu
+            })
     py3nvml.py3nvml.nvmlShutdown()
     return gpu_rates
 
@@ -90,15 +89,16 @@ def get_gpumem_utilization(allocated_gpus=[]):
         assert num_gpus > max(allocated_gpus)
     mem_rates = []
     for i, gpuid in enumerate(allocated_gpus):
-        tmp = {}
         try:
             h = py3nvml.py3nvml.nvmlDeviceGetHandleByIndex(gpuid)
         except:
             continue
         info = py3nvml.utils.try_get_info(py3nvml.py3nvml.nvmlDeviceGetMemoryInfo, h,
                              ['something'])
-        tmp['gpu_id'] = gpuid
-        tmp['mem_rate'] = info.free/info.total
-        mem_rates.append(tmp)
+        mem_rates.append({
+            'gpu_id': gpuid,
+            'mem_rate': info.free/info.total
+            })
     py3nvml.py3nvml.nvmlShutdown()
     return mem_rates
+    

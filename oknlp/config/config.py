@@ -5,8 +5,7 @@ HOME = os.path.expanduser("~")
 CONFIG_FILE = ".oknlp.config.yaml"
 DEFAULT_CONFIG = {
     "path": os.path.join(HOME, ".oknlp"),
-    "source": "https://data.thunlp.org/ink/",
-    "default_device": "cpu"
+    "source": "https://data.thunlp.org/ink/"
 }
 
 
@@ -15,13 +14,11 @@ class Config:
     Attributes:
         path: list[str]
         source: str, data source url ending with "/"
-        default_device: str
     """
 
     def __init__(self):
         self.path = DEFAULT_CONFIG["path"]
-        self.source = DEFAULT_CONFIG["source"]
-        self.default_device = DEFAULT_CONFIG["default_device"]       
+        self.source = DEFAULT_CONFIG["source"]     
         self.set_config_from_file(HOME)
         self.set_config_from_file("")
         self.create_default_config_file()
