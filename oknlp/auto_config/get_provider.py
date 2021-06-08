@@ -1,10 +1,14 @@
 import re
+import onnxruntime
 from .gpu_scheduler import get_gpu_info, get_gpu_utilization, get_gpumem_utilization
 
 def get_device_id(device):
-    pattern = re.compile(r'\d+')    
-    span = re.search(pattern, device).span() 
-    dv_id = int(device[span[0]:span[1]])
+    pattern = re.compile(r'\d+')
+    try:    
+        span = re.search(pattern, device).span() 
+        dv_id = int(device[span[0]:span[1]])
+    except:
+        dv_id = 0
     return dv_id
 
 def generate_device(device_list, type = 'gpu'):
@@ -19,12 +23,15 @@ def generate_device(device_list, type = 'gpu'):
     return device
 
 def get_provider(device=None):
+    
     d_cuda = ('CUDAExecutionProvider',{
               'device_id': 0,
               'arena_extend_strategy': 'kNextPowerOfTwo',
               'cudnn_conv_algo_search': 'EXHAUSTIVE'
             })
     d_cpu = 'CPUExecutionProvider'
+    if onnxruntime.get_available_providers() == [d_cpu]:
+        return [d_cpu], False
     fp16_mode = False
 
     comp_usable = [i['gpu_id'] for i in get_gpu_utilization() if i['gpu_rate'] <0.2]
@@ -43,5 +50,6 @@ def get_provider(device=None):
         if d_cuda[1]['device_id'] in fp16_device:
             fp16_mode = True
         providers = [d_cuda, d_cpu]
+
     return providers, fp16_mode 
 

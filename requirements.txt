@@ -1,3 +1,6 @@
+PyYaml
+requests
+tqdm
 transformers>=4
 seqeval
 kara-storage
