@@ -7,7 +7,7 @@ class THUlacCWS:
     """使用THUlac实现的CWS算法
     """
     def __init__(self, device=None):
-        model_path = load("cws.lac")
+        model_path = load("cws.lac", 'fp32')
         self.model = THUlac(model_path)
         #super().__init__(device)
 

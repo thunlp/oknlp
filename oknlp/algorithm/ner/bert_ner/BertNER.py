@@ -1,28 +1,25 @@
 import os
 from functools import reduce
 from ....utils.format_output import format_output
-import kara_storage
 import numpy as np
 from transformers import BertTokenizer
 import onnxruntime as rt
 from ..BaseNER import BaseNER
 from ....auto_config import get_provider
-from ....data import load,get_model
-from typing import List, Dict, Union
+from ....data import load
 
 labels = ['O'] + reduce(lambda x, y: x + y, [[f"{kd}-{l}" for kd in ('B', 'I', 'O')] for l in ('PER', 'LOC', 'ORG')])
 
 class BertNER(BaseNER):
     def __init__(self, device=None, *args, **kwargs):
-        self.inited = False
         providers, fp16_mode = get_provider(device)
         if not fp16_mode:
-            ner_path = load('ner.bert','cpu')
+            model_path = load('ner.bert','fp32')
         else:
-            ner_path = load('ner.bert','gpu')
+            model_path = load('ner.bert','fp16')
         self.config = {
             "inited": False,
-            "ner_path": ner_path,
+            "model_path": model_path,
             "providers": providers
         }
         super().__init__(*args,**kwargs)
@@ -46,7 +43,7 @@ class BertNER(BaseNER):
         if not self.config['inited']:
             sess_options = rt.SessionOptions()
             sess_options.graph_optimization_level = rt.GraphOptimizationLevel.ORT_ENABLE_ALL
-            self.sess = rt.InferenceSession(get_model(self.config['ner_path']),sess_options, providers=self.config['providers'])
+            self.sess = rt.InferenceSession(os.path.join(self.config['model_path'], 'model.onnx'),sess_options, providers=self.config['providers'])
             self.input_name = self.sess.get_inputs()[0].name
             self.att_name = self.sess.get_inputs()[1].name 
             self.label_name = self.sess.get_outputs()[0].name

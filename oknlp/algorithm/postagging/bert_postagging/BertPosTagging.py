@@ -3,27 +3,25 @@ from transformers import BertTokenizer
 from .class_list import classlist
 from .apply_text_norm import process_sent
 from .evaluate_funcs import format_output
-import kara_storage
 import numpy as np
 import onnxruntime as rt
 from ..BasePosTagging import BasePosTagging
 from ....auto_config import get_provider
-from ....data import load,get_model
+from ....data import load
 
 class BertPosTagging(BasePosTagging):
     """使用Bert模型实现的PosTagging算法
     """
 
     def __init__(self, device=None, *args, **kwargs):
-        self.inited = False
         providers, fp16_mode = get_provider(device)
         if not fp16_mode:
-            postagging_path = load('postagging.bert','cpu')
+            model_path = load('postagging.bert','fp32')
         else:
-            postagging_path = load('postagging.bert','gpu')
+            model_path = load('postagging.bert','fp16')
         self.config = {
             "inited": False,
-            "postagging_path": postagging_path,
+            "model_path": model_path,
             "providers": providers
         }
         super().__init__(*args,**kwargs)
@@ -50,7 +48,7 @@ class BertPosTagging(BasePosTagging):
         if not self.config['inited']:
             sess_options = rt.SessionOptions()
             sess_options.graph_optimization_level = rt.GraphOptimizationLevel.ORT_ENABLE_ALL
-            self.sess = rt.InferenceSession(get_model(self.config['postagging_path']),sess_options, providers=self.config['providers'])
+            self.sess = rt.InferenceSession(os.path.join(self.config['model_path'],'model.onnx'),sess_options, providers=self.config['providers'])
             self.input_name = self.sess.get_inputs()[0].name
             self.att_name = self.sess.get_inputs()[1].name 
             self.label_name = self.sess.get_outputs()[0].name

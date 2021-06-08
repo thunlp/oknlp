@@ -1,2 +1,2 @@
-from .data_loads import load, get_model
+from .data_loads import load
 

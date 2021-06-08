@@ -10,9 +10,9 @@ def get_provider(device=None):
     d_cpu = 'CPUExecutionProvider'
     fp16_mode = False
 
-    gpu_rates = [i['gpu_id'] for i in get_gpu_utilization() if i['gpu_rate'] <0.2]
-    mem_rates = [i['gpu_id'] for i in get_gpumem_utilization() if i['mem_rate'] >0.7]
-    gpu_usable = list(set(gpu_rates).intersection(set(mem_rates)))
+    comp_usable = [i['gpu_id'] for i in get_gpu_utilization() if i['gpu_rate'] <0.2]
+    mem_usable = [i['gpu_id'] for i in get_gpumem_utilization() if i['mem_rate'] >0.7]
+    gpu_usable = list(set(comp_usable).intersection(set(mem_usable)))
     gpu_info = get_gpu_info(gpu_usable)
     fp16_device = [i['gpu_id'] for i in gpu_info if i['gpu_compt']>=6.1]
 
@@ -33,7 +33,8 @@ def get_provider(device=None):
         pattern = re.compile(r'\d+')    
         span = re.search(pattern, device).span() 
         d_cuda[1]['device_id'] = int(device[span[0]:span[1]])
-        if d_cuda[1]['device_id']) in fp16_device:
+        if d_cuda[1]['device_id'] in fp16_device:
             fp16_mode = True
         providers = [d_cuda, d_cpu]
     return providers, fp16_mode 
+

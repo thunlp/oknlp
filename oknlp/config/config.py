@@ -4,7 +4,7 @@ import yaml
 HOME = os.path.expanduser("~")
 CONFIG_FILE = ".oknlp.config.yaml"
 DEFAULT_CONFIG = {
-    "path": [os.path.join(HOME, ".oknlp")],
+    "path": os.path.join(HOME, ".oknlp"),
     "source": "https://data.thunlp.org/ink/",
     "default_device": "cpu"
 }
