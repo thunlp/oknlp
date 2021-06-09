@@ -30,7 +30,7 @@ def get_provider(device=None):
               'cudnn_conv_algo_search': 'EXHAUSTIVE'
             })
     d_cpu = 'CPUExecutionProvider'
-    if onnxruntime.get_available_providers() == [d_cpu]:
+    if 'CUDAExecutionProvider' not in onnxruntime.get_available_providers():
         return [d_cpu], False
     fp16_mode = False
 
@@ -40,7 +40,7 @@ def get_provider(device=None):
     fp16_device = [i['gpu_id'] for i in get_gpu_info(gpu_usable) if i['gpu_compt']>=6.1]
     device_list = [fp16_device, gpu_usable]
     
-    if device==None:
+    if device == None:
         device = generate_device(device_list)
 
     if 'cpu' in device:

@@ -41,19 +41,10 @@ def split_index(label_list):
     return label_idx
 
 
-def format_output(pred_label, pred_mask, label_list, dims=2):
+def format_output(pred_label, label_list):
     start_label = split_index(label_list)
-
-    if dims == 1:
-        mask_index = [tmp_idx for tmp_idx, tmp in enumerate(pred_mask) if tmp != 0]
-        pred_label = [tmp for tmp_idx, tmp in enumerate(pred_label) if tmp_idx in mask_index]
-        pred_class = [classlist[i] for i in pred_label]
-        entities = extract_entities(pred_label, start_label=start_label)
-        entities_range = [tuple(map(int, key.split('_'))) for key in entities.keys()]
-        return [pred_class, [(r, pred_class[r[0]][2:] if pred_class[r[0]] != 'O' else 'O') for r in entities_range]]
-
-    elif dims == 2:
-        res = []
-        for pred_item, mask_item in zip(pred_label, pred_mask):
-            res.append(format_output(pred_item, mask_item, label_list, dims=1))
-        return res
+    pred_label = [tmp for tmp_idx, tmp in enumerate(pred_label)][1:-1]
+    pred_class = [classlist[i] for i in pred_label]
+    entities = extract_entities(pred_label, start_label=start_label)
+    entities_range = [tuple(map(int, key.split('_'))) for key in entities.keys()]
+    return [pred_class, [(r, pred_class[r[0]][2:] if pred_class[r[0]] != 'O' else 'O') for r in entities_range]]

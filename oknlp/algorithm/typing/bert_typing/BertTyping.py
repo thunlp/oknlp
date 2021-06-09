@@ -57,9 +57,10 @@ class BertTyping(BaseTyping):
             self.label_name = self.sess.get_outputs()[0].name
             self.config['inited'] = True
         x, y, at = np.stack(tuple(batch),axis=1)
-        input_feed = {self.input_name: [np.array(i).astype(np.int32) for i in x], 
+        max_len = max([len(i) for i in x])
+        input_feed = {self.input_name: [np.array(i + [0] * (max_len - len(i))).astype(np.int32) for i in x], 
             self.pos: [np.array(i).astype(np.int64) for i in y], 
-            self.att_name: [np.array(i).astype(np.int32) for i in at]}
+            self.att_name: [np.array(i + [0] * (max_len - len(i))).astype(np.int32) for i in at]}
         pred_onx = self.sess.run([self.label_name], input_feed)[0]
         return pred_onx
     
