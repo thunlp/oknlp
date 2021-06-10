@@ -236,7 +236,7 @@ class BaseAlgorithm:
     def _infer(self, from_queue: Queue, to_queue: Queue):
         """将数据从from_queue中取出，推理后放入to_queue
         """
-        while True:
+        while True:  
             batch_info = []
             batch_data = []
 
@@ -252,8 +252,9 @@ class BaseAlgorithm:
                     serial_idx, idx, data = from_queue.get_nowait()
                 except Empty:
                     # 2. Queue is empty
-                    break
+                    break     
             batch_data = self.inference(batch_data)
+
             for info, data in zip(batch_info, batch_data):
                 serial_idx, idx = info
                 to_queue.put((serial_idx, idx, data))

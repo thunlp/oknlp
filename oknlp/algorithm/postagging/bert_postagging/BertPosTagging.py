@@ -35,12 +35,12 @@ class BertPosTagging(BasePosTagging):
         sx = self.tokenizer.convert_tokens_to_ids(['[CLS]'] + tokens + ['[SEP]']) 
         sy = [-1] + [0] * len(tokens) +[-1]
         sat = [1] * (len(tokens) + 2) 
-        return x, np.array(sx).astype(np.int32), np.array(sy).astype(np.int32), np.array(sat).astype(np.int32)
+        return x, sx, sy, sat
 
     def postprocess(self, x, *args, **kwargs):
         result = []
-        sent, (pred, mask) = x
-        for ((begin, end), tag) in format_output(pred, mask, classlist, dims=1)[1]:
+        sent, pred = x
+        for ((begin, end), tag) in format_output(pred, classlist)[1]:
             result.append((sent[begin:end], tag))
         return result
 
@@ -53,8 +53,12 @@ class BertPosTagging(BasePosTagging):
             self.att_name = self.sess.get_inputs()[1].name 
             self.label_name = self.sess.get_outputs()[0].name
             self.config['inited'] = True
-        input_feed = {self.input_name: [np.array(i[1]).astype(np.int32) for i in batch], 
-            self.att_name: [np.array(i[3]).astype(np.int32) for i in batch]}
+        max_len = max([len(i[1]) for i in batch])
+        input_array = [np.array(i[1] + [0] * (max_len - len(i[1]))).astype(np.int32) for i in batch]
+        att_array = [np.array(i[3] + [0] * (max_len - len(i[3]))).astype(np.int32) for i in batch]
+        input_feed = {self.input_name: input_array, 
+            self.att_name: att_array}
         pred_onx = self.sess.run([self.label_name],input_feed)[0]
         mask = np.array([i[2] for i in batch]) != -1
-        return list(zip([i[0] for i in batch],list(zip(np.where(mask, np.where(mask, pred_onx, -1).tolist(), -1),mask))))
+        pred_onx = [i[0][:len(i[1])] for i in list(zip(pred_onx, [i[2] for i in batch]))]
+        return list(zip([i[0] for i in batch],np.where(mask, pred_onx, -1).tolist()))
