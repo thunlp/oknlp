@@ -1,6 +1,7 @@
-torch >= 1.5.0
 PyYaml
 requests
 tqdm
 transformers>=4
-seqeval
+kara-storage
+onnxruntime
+py3nvml

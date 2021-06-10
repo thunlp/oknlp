@@ -3,13 +3,13 @@ from ...._C import THUlac
 from ....data import load
 
 
-class THUlacCWS(BaseCWS):
+class THUlacCWS:
     """使用THUlac实现的CWS算法
     """
     def __init__(self, device=None):
-        model_path = load('thulac_models')
+        model_path = load("cws.lac", 'fp32')
         self.model = THUlac(model_path)
-        super().__init__(device)
+        #super().__init__(device)
 
     def __call__(self, sents):
         result = [self.model.cut(sent) for sent in sents]

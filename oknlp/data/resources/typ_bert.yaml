@@ -1,7 +1,0 @@
-name: typ_bert
-version: 1
-path: "typ_bert.zip"
-files:
-  - "types.json"
-  - "typing.pth"
-description: Typing模型

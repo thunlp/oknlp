@@ -1,59 +1,63 @@
-import torch
-from ..BaseNER import BaseNER
-from ....utils.dataset import Dataset
-from ....nn.models import BertSeq as Model
-import torch.utils.data as Data
-from functools import reduce
-from transformers import BertTokenizer
-from ....utils.format_output import format_output
-from ....utils.process_io import split_text_list, merge_result
-from ....data import load
-from ....config import config
 import os
+from functools import reduce
+from ....utils.format_output import format_output
+import numpy as np
+from transformers import BertTokenizer
+import onnxruntime as rt
+from ..BaseNER import BaseNER
+from ....auto_config import get_provider
+from ....data import load
 
 labels = ['O'] + reduce(lambda x, y: x + y, [[f"{kd}-{l}" for kd in ('B', 'I', 'O')] for l in ('PER', 'LOC', 'ORG')])
 
-
 class BertNER(BaseNER):
-    """使用Bert模型实现的NER算法
-    """
-    def infer(self, sents):
-        self.ner_path = load('ner_bert')
-        self.model = Model()
-        self.model.expand_to(len(labels))
-        self.model.load_state_dict(torch.load(os.path.join(self.ner_path, "ner_bert.ckpt"), map_location=lambda storage, loc: storage))
-        self.model.eval()
-        self.tokenizer = BertTokenizer.from_pretrained("bert-base-chinese")
+    def __init__(self, device=None, *args, **kwargs):
+        providers, fp16_mode = get_provider(device)
+        if not fp16_mode:
+            model_path = load('ner.bert','fp32')
+        else:
+            model_path = load('ner.bert','fp16')
+        self.config = {
+            "inited": False,
+            "model_path": model_path,
+            "providers": providers
+        }
+        super().__init__(*args,**kwargs)
+        
 
-        self.sents, is_end_list = split_text_list(sents, 126)
-        self.test_dataset = Dataset(self.sents, self.tokenizer)
-        self.test_loader = Data.DataLoader(self.test_dataset, batch_size=8, num_workers=0)
-        split_ans_list = self.infer_epoch(self.test_loader)
-        count = 0
-        for i, sent in enumerate(self.sents):
-            split_ans = split_ans_list[i]
-            for d in split_ans:
-                d['begin'] += count
-                d['end'] += count
-            count += len(sent)
-            if is_end_list[i]:
-                count = 0
-        return merge_result(split_ans_list, is_end_list)
+    def preprocess(self, x, *args, **kwargs):
+        if not self.config['inited']:
+            self.tokenizer = BertTokenizer.from_pretrained("bert-base-chinese")
+            self.config['inited'] = True
+        tokens = self.tokenizer.tokenize(x)
+        sx = self.tokenizer.convert_tokens_to_ids(['[CLS]'] + tokens + ['[SEP]']) 
+        sy = [-1] + [0] * len(tokens) +[-1]
+        sat = [1] * (len(tokens) + 2)
+        return x, sx, sy, sat
 
-    def infer_step(self, batch):
-        x, y, at = batch
-        with torch.no_grad():
-            p = self.model(x, at)
-            mask = y != -1
-        return torch.where(mask, p, 0).cpu().tolist(), mask.cpu().tolist()
+    def postprocess(self, x, *args, **kwargs):
+        sent, pred = x
+        return [{'type': j[0], 'begin': j[1], 'end': j[2]} for j in format_output(pred, labels)]
+        
+    def inference(self, batch):
+        if not self.config['inited']:
+            sess_options = rt.SessionOptions()
+            sess_options.graph_optimization_level = rt.GraphOptimizationLevel.ORT_ENABLE_ALL
+            self.sess = rt.InferenceSession(os.path.join(self.config['model_path'], 'model.onnx'),sess_options, providers=self.config['providers'])
+            self.input_name = self.sess.get_inputs()[0].name
+            self.att_name = self.sess.get_inputs()[1].name 
+            self.label_name = self.sess.get_outputs()[0].name
+            self.config['inited'] = True
+        max_len = max([len(i[1]) for i in batch])
+        input_array = [np.array(i[1] + [0] * (max_len - len(i[1]))).astype(np.int32) for i in batch]
+        att_array = [np.array(i[3] + [0] * (max_len - len(i[3]))).astype(np.int32) for i in batch]
+        input_feed = {self.input_name: input_array, self.att_name: att_array }
 
-    def infer_epoch(self, infer_loader):
-        pred, mask = [], []
-        for batch in infer_loader:
-            p, m = self.infer_step(batch)
-            pred += p
-            mask += m
-        results = []
-        for i in format_output(self.sents, pred, labels):
-            results.append([{'type': j[0], 'begin': j[1], 'end': j[2]} for j in i])
-        return results
+        # input_feed = {self.input_name: [np.array(i[1]).astype(np.int32) for i in batch], 
+        #     self.att_name: [np.array(i[3]).astype(np.int32) for i in batch]}
+        pred_onx = self.sess.run([self.label_name],input_feed)[0]
+        mask = np.array([i[2] for i in batch]) != -1
+        pred_onx = [i[0][:len(i[1])] for i in list(zip(pred_onx, [i[2] for i in batch]))]
+        pred_onx = np.where(mask, pred_onx, -1).tolist() 
+
+        return list(zip([i[0] for i in batch],pred_onx))#合并句子和结果

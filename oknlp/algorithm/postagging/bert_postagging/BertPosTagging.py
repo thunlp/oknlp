@@ -1,55 +1,64 @@
 import os
-import torch
-import torch.utils.data as Data
 from transformers import BertTokenizer
-from ....utils.process_io import split_text_list, merge_result
-from ....nn.models import BertLinear
-from ....data import load
-from ...BaseAlgorithm import BaseAlgorithm
-from .dataset import Dataset
 from .class_list import classlist
 from .apply_text_norm import process_sent
 from .evaluate_funcs import format_output
+import numpy as np
+import onnxruntime as rt
+from ..BasePosTagging import BasePosTagging
+from ....auto_config import get_provider
+from ....data import load
 
-
-class BertPosTagging(BaseAlgorithm):
+class BertPosTagging(BasePosTagging):
     """使用Bert模型实现的PosTagging算法
     """
-    def infer(self, sents):
-        pos_path = load('pos_bert')
-        self.model = BertLinear(classlist)
-        checkpoint = torch.load(os.path.join(pos_path, "params.ckpt"), map_location=lambda storage, loc: storage)
-        self.model.load_state_dict(checkpoint)
-        self.model.eval()
-        self.tokenizer = BertTokenizer.from_pretrained("bert-base-chinese")
 
-        sents, is_end_list = split_text_list(sents, 126)
-        processed_sents = [process_sent(' '.join(sent)).split(' ') for sent in sents]
-        examples = [[sent, [0 for i in range(len(sent))]] for sent in processed_sents]
-        dataset = Dataset(examples, self.tokenizer)
-        formatted_output = self.infer_epoch(Data.DataLoader(dataset, batch_size=8, num_workers=0))
-        results = self.process_output(sents, formatted_output)
-        return merge_result(results, is_end_list)
+    def __init__(self, device=None, *args, **kwargs):
+        providers, fp16_mode = get_provider(device)
+        if not fp16_mode:
+            model_path = load('postagging.bert','fp32')
+        else:
+            model_path = load('postagging.bert','fp16')
+        self.config = {
+            "inited": False,
+            "model_path": model_path,
+            "providers": providers
+        }
+        super().__init__(*args,**kwargs)
 
-    def infer_epoch(self, infer_loader):
-        pred, mask = [], []
-        for batch in infer_loader:
-            p, m = self.infer_step(batch)
-            pred += p
-            mask += m
-        return format_output(pred, mask, classlist, dims=2)
 
-    def infer_step(self, batch):
-        x, at, y = batch
-        with torch.no_grad():
-            p = self.model(x, at)
-            return p.cpu().tolist(), (y != -1).long().cpu().tolist()
+    def preprocess(self, x, *args, **kwargs):
+        if not self.config['inited']:
+            self.tokenizer = BertTokenizer.from_pretrained("bert-base-chinese")
+            self.config['inited'] = True
+        tokens=self.tokenizer.tokenize(x)
+        sx = self.tokenizer.convert_tokens_to_ids(['[CLS]'] + tokens + ['[SEP]']) 
+        sy = [-1] + [0] * len(tokens) +[-1]
+        sat = [1] * (len(tokens) + 2) 
+        return x, sx, sy, sat
 
-    def process_output(self, sents, formatted_output):
-        results = []
-        for sent, [_, pos_tagging] in zip(sents, formatted_output):
-            result = []
-            for ((begin, end), tag) in pos_tagging:
-                result.append((sent[begin:end], tag))
-            results.append(result)
-        return results
+    def postprocess(self, x, *args, **kwargs):
+        result = []
+        sent, pred = x
+        for ((begin, end), tag) in format_output(pred, classlist)[1]:
+            result.append((sent[begin:end], tag))
+        return result
+
+    def inference(self, batch):
+        if not self.config['inited']:
+            sess_options = rt.SessionOptions()
+            sess_options.graph_optimization_level = rt.GraphOptimizationLevel.ORT_ENABLE_ALL
+            self.sess = rt.InferenceSession(os.path.join(self.config['model_path'],'model.onnx'),sess_options, providers=self.config['providers'])
+            self.input_name = self.sess.get_inputs()[0].name
+            self.att_name = self.sess.get_inputs()[1].name 
+            self.label_name = self.sess.get_outputs()[0].name
+            self.config['inited'] = True
+        max_len = max([len(i[1]) for i in batch])
+        input_array = [np.array(i[1] + [0] * (max_len - len(i[1]))).astype(np.int32) for i in batch]
+        att_array = [np.array(i[3] + [0] * (max_len - len(i[3]))).astype(np.int32) for i in batch]
+        input_feed = {self.input_name: input_array, 
+            self.att_name: att_array}
+        pred_onx = self.sess.run([self.label_name],input_feed)[0]
+        mask = np.array([i[2] for i in batch]) != -1
+        pred_onx = [i[0][:len(i[1])] for i in list(zip(pred_onx, [i[2] for i in batch]))]
+        return list(zip([i[0] for i in batch],np.where(mask, pred_onx, -1).tolist()))

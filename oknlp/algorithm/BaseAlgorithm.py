@@ -98,7 +98,6 @@ class BaseAlgorithm:
         self.pre_queue = Queue(max_queue_size)  # after preprocess
         self.infer_queue = Queue(max_queue_size)  # after infer
         self.post_queue = Queue(max_queue_size)  # after postprocess
-
         if sys.platform == "win32":
             # using named pipe
             import random
@@ -208,7 +207,7 @@ class BaseAlgorithm:
     def __call__(self, sents):
         '''线程根据自己的id，（获取client锁后）用client发数据，等待event，获取结果
         '''
-        thread_id = threading.get_native_id()
+        thread_id = threading.get_ident()
         with self._result_dict_lock:
             if thread_id not in self._result_dict:
                 self._result_dict[thread_id] = {'event': threading.Event(), 'result': None}
@@ -237,7 +236,7 @@ class BaseAlgorithm:
     def _infer(self, from_queue: Queue, to_queue: Queue):
         """将数据从from_queue中取出，推理后放入to_queue
         """
-        while True:
+        while True:  
             batch_info = []
             batch_data = []
 
@@ -253,8 +252,8 @@ class BaseAlgorithm:
                     serial_idx, idx, data = from_queue.get_nowait()
                 except Empty:
                     # 2. Queue is empty
-                    break
-            batch_data = self.infer(batch_data)
+                    break     
+            batch_data = self.inference(batch_data)
 
             for info, data in zip(batch_info, batch_data):
                 serial_idx, idx = info
@@ -273,7 +272,7 @@ class BaseAlgorithm:
         """
         return x
 
-    def infer(self, batch):
+    def inference(self, batch):
         """对一组输入进行推理
         """
         return batch

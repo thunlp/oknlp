@@ -1,56 +1,66 @@
 import os
-import torch
 import json
-import torch.utils.data as Data
 from transformers import BertTokenizer
+import numpy as np
+import onnxruntime as rt
 from ..BaseTyping import BaseTyping
-from ....nn.models import BertLinearSigmoid
+from ....auto_config import get_provider
 from ....data import load
-
-
-class Dataset(Data.Dataset):
-    def __init__(self, sents, tokenizer, max_length=128):
-        self.sents = sents
-        self.tokenizer = tokenizer
-        self.max_length = max_length
-
-    def __len__(self):
-        return len(self.sents)
-
-    def __getitem__(self, i):
-        [text, span] = self.sents[i]
-        if span[0] > self.max_length:
-            text = text[span[0]:]
-            span = (0, span[1] - span[0])
-        text = text[:span[0]] + '<ent>' + text[span[0]: span[1]] + '</ents>' + text[span[1]:]
-        pos = [text.index('<ent>')]
-        text = self.tokenizer.convert_tokens_to_ids(self.tokenizer.tokenize(text))[:self.max_length]
-        text += [0] * (self.max_length - len(text))
-        return torch.LongTensor(text), torch.LongTensor(pos)
-
 
 class BertTyping(BaseTyping):
     """使用Bert模型实现的Typing算法
     """
-    def infer(self, sents):
-        typ_path = load('typ_bert')
-        self.tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')
-        self.tokenizer.add_special_tokens({'additional_special_tokens': ["<ent>", "</ent>"]})
-        self.types = json.loads(open(os.path.join(typ_path, 'types.json'), 'r').read())
-        self.model = BertLinearSigmoid(len(self.tokenizer))
-        self.model.load_state_dict(torch.load(os.path.join(typ_path, 'typing.pth'), map_location=lambda storage, loc: storage))
-        self.model.eval()
-        results = []
-        dataset = Dataset(sents, self.tokenizer)
-        dataloader = Data.DataLoader(dataset, batch_size=8, num_workers=0)
-        for text, pos in dataloader:
-            with torch.no_grad():
-                outs = self.model(text, pos)
-                outs = outs.cpu().tolist()
-            for out in outs:
-                result = []
-                for i, score in enumerate(out):
-                    if score > 0.1:
-                        result.append((self.types[i], score))
-                results.append(result)
-        return results
+    def __init__(self, device=None, *args, **kwargs):
+        providers, fp16_mode = get_provider(device)
+        if not fp16_mode:
+            model_path = load('typing.bert','fp32')
+        else:
+            model_path = load('typing.bert','fp16')
+        types = json.loads(open(os.path.join(model_path, 'types.json'), 'r').read())
+        self.config = {
+            "inited": False,
+            "model_path": model_path,
+            "providers": providers,
+            'types': types
+        }
+        super().__init__(*args,**kwargs)
+       
+
+    def preprocess(self, x, *args, **kwargs):
+        if not self.config['inited']:
+            self.tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')
+            self.tokenizer.add_special_tokens({'additional_special_tokens': ["<ent>", "</ent>"]})
+            self.config['inited'] = True
+        text, span = x
+        text = text[:span[0]] + '<ent>' + text[span[0]: span[1]] + '</ent>' + text[span[1]:]
+        sx = self.tokenizer.convert_tokens_to_ids(self.tokenizer.tokenize(text))
+        sy = [text.index('<ent>')]
+        sat = [1] * (len(sx)) 
+        return sx, sy , sat
+
+
+    def postprocess(self, x, *args, **kwargs):
+        result = []
+        for i, score in enumerate(x):
+            if float(score) > 0.1:
+                result.append((self.config['types'][i], float(score)))
+        return result
+
+    def inference(self, batch):
+        if not self.config['inited']:
+            sess_options = rt.SessionOptions()
+            sess_options.graph_optimization_level = rt.GraphOptimizationLevel.ORT_ENABLE_ALL
+            self.sess = rt.InferenceSession(os.path.join(self.config['model_path'],'model.onnx'),sess_options,providers=self.config['providers'])
+            self.input_name = self.sess.get_inputs()[0].name
+            self.pos = self.sess.get_inputs()[1].name 
+            self.att_name = self.sess.get_inputs()[2].name
+            self.label_name = self.sess.get_outputs()[0].name
+            self.config['inited'] = True
+        x, y, at = np.stack(tuple(batch),axis=1)
+        max_len = max([len(i) for i in x])
+        input_feed = {self.input_name: [np.array(i + [0] * (max_len - len(i))).astype(np.int32) for i in x], 
+            self.pos: [np.array(i).astype(np.int64) for i in y], 
+            self.att_name: [np.array(i + [0] * (max_len - len(i))).astype(np.int32) for i in at]}
+        pred_onx = self.sess.run([self.label_name], input_feed)[0]
+        return pred_onx
+    
