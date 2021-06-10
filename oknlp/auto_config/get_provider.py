@@ -14,7 +14,7 @@ def get_device_id(device):
 def generate_device(device_list, type = 'gpu'):
     device = ''
     for dl in device_list:
-        if dl != []:
+        if len(dl) != 0:
             if type == 'gpu':
                 device = 'cuda: {}'.format(dl[0]) 
                 break

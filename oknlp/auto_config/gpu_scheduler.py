@@ -1,6 +1,5 @@
 import logging
 import numpy as np
-import os
 import py3nvml
 import warnings
 
@@ -10,7 +9,7 @@ def get_gpu_info(allocated_gpus=[]):
     logger = logging.getLogger(__name__)
     try:
         py3nvml.py3nvml.nvmlInit()
-    except:
+    except py3nvml.py3nvml.NVMLError_LibraryNotFound:
         str_ = """Couldn't connect to nvml drivers. Check they are installed correctly."""
         warnings.warn(str_, RuntimeWarning)
         logger.warn(str_)
@@ -43,7 +42,7 @@ def get_gpu_utilization(allocated_gpus=[]):
     logger = logging.getLogger(__name__)
     try:
         py3nvml.py3nvml.nvmlInit()
-    except:
+    except py3nvml.py3nvml.NVMLError_LibraryNotFound:
         str_ = """Couldn't connect to nvml drivers. Check they are installed correctly."""
         warnings.warn(str_, RuntimeWarning)
         logger.warn(str_)
@@ -77,7 +76,7 @@ def get_gpumem_utilization(allocated_gpus=[]):
     logger = logging.getLogger(__name__)
     try:
         py3nvml.py3nvml.nvmlInit()
-    except:
+    except py3nvml.py3nvml.NVMLError_LibraryNotFound:
         str_ = """Couldn't connect to nvml drivers. Check they are installed correctly."""
         warnings.warn(str_, RuntimeWarning)
         logger.warn(str_)
@@ -102,3 +101,5 @@ def get_gpumem_utilization(allocated_gpus=[]):
     py3nvml.py3nvml.nvmlShutdown()
     return mem_rates
     
+if __name__ =='__main__':
+    get_gpu_info()
