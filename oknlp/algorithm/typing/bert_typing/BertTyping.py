@@ -11,7 +11,7 @@ class BertTyping(BaseTyping):
     """使用Bert模型实现的Typing算法
     """
     def __init__(self, device=None, *args, **kwargs):
-        providers, fp16_mode = get_provider(device)
+        providers, fp16_mode, batch_size = get_provider(device)
         if not fp16_mode:
             model_path = load('typing.bert','fp32')
         else:
@@ -23,6 +23,7 @@ class BertTyping(BaseTyping):
             "providers": providers,
             'types': types
         }
+        self.batch_size = batch_size
         super().__init__(*args,**kwargs)
        
 

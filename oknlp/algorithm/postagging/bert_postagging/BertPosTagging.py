@@ -14,7 +14,7 @@ class BertPosTagging(BasePosTagging):
     """
 
     def __init__(self, device=None, *args, **kwargs):
-        providers, fp16_mode = get_provider(device)
+        providers, fp16_mode, batch_size = get_provider(device)
         if not fp16_mode:
             model_path = load('postagging.bert','fp32')
         else:
@@ -24,6 +24,7 @@ class BertPosTagging(BasePosTagging):
             "model_path": model_path,
             "providers": providers
         }
+        self.batch_size = batch_size
         super().__init__(*args,**kwargs)
 
 

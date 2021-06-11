@@ -12,7 +12,7 @@ labels = ['O'] + reduce(lambda x, y: x + y, [[f"{kd}-{l}" for kd in ('B', 'I', '
 
 class BertNER(BaseNER):
     def __init__(self, device=None, *args, **kwargs):
-        providers, fp16_mode = get_provider(device)
+        providers, fp16_mode, batch_size = get_provider(device)
         if not fp16_mode:
             model_path = load('ner.bert','fp32')
         else:
@@ -22,6 +22,7 @@ class BertNER(BaseNER):
             "model_path": model_path,
             "providers": providers
         }
+        self.batch_size = batch_size
         super().__init__(*args,**kwargs)
         
 
