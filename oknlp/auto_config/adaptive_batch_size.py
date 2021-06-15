@@ -10,6 +10,5 @@ def adaptive_batch_size(gpuid, fp16_mode):
         batch_size = mem_avl * 16
     else:
         batch_size = mem_avl * 4
-
     py3nvml.py3nvml.nvmlShutdown()
     return batch_size, mem_avl
