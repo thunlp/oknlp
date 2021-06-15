@@ -24,7 +24,7 @@ def generate_device(device_list, type = 'gpu'):
     return device
 
 def get_provider(device = None):
-    
+    batch_size = 1
     d_cuda = ('CUDAExecutionProvider',{
               'device_id': 0,
               'arena_extend_strategy': 'kNextPowerOfTwo',
@@ -33,7 +33,7 @@ def get_provider(device = None):
             })
     d_cpu = 'CPUExecutionProvider'
     if 'CUDAExecutionProvider' not in onnxruntime.get_available_providers():
-        return [d_cpu], False
+        return [d_cpu], False, batch_size
     fp16_mode = False
 
     comp_usable = [i['gpu_id'] for i in get_gpu_utilization() if i['gpu_rate'] <0.2]
@@ -44,7 +44,7 @@ def get_provider(device = None):
     
     if device == None:
         device = generate_device(device_list)
-
+    
     if 'cpu' in device:
         providers = [d_cpu]
         batch_size = 1
@@ -56,5 +56,5 @@ def get_provider(device = None):
         d_cuda[1]['cuda_mem_limit'] = mem_avl <<30
         providers = [d_cuda, d_cpu]
 
-    return providers, fp16_mode ,batch_size
+    return providers, fp16_mode, batch_size
 
