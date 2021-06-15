@@ -93,9 +93,9 @@ class BaseAlgorithm:
     '''算法类的基类，派生类需要实现preprocess(self, x)、infer(self, batch)、postprocess(self, x)方法
     '''
     def __init__(self, batch_size=1, num_preprocess=None, num_postprocess=None, max_queue_size=10000):
-        if num_preprocess == None:
+        if num_preprocess is None:
             num_preprocess = min(mp.cpu_count(),4)
-        if num_postprocess == None:
+        if num_postprocess is None:
             num_postprocess = min(mp.cpu_count(),4)
         self.batch_size = batch_size
         self.raw_queue = Queue(max_queue_size)  # raw

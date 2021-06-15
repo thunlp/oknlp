@@ -12,6 +12,7 @@ import time
 labels = reduce(lambda x, y: x+y, [[f"{kd}-{l}" for kd in ('B','I','O')] for l in ('SEG',)])
 class BertCWS(BaseCWS):
     def __init__(self, device = None, *args, **kwargs):
+
         providers, fp16_mode, batch_size = get_provider(device)
         if not fp16_mode:
             model_path = load('cws.bert','fp32')
@@ -22,7 +23,9 @@ class BertCWS(BaseCWS):
             "model_path": model_path,
             "providers": providers
         }
-        super().__init__(batch_size=batch_size, *args, **kwargs)
+        if "batch_size" not in kwargs:
+            kwargs["batch_size"] = batch_size
+        super().__init__(*args, **kwargs)
 
     def preprocess(self, x, *args, **kwargs):
         if not self.config['inited']:

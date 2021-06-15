@@ -22,6 +22,8 @@ class BertNER(BaseNER):
             "model_path": model_path,
             "providers": providers
         }
+        if "batch_size" not in kwargs:
+            kwargs["batch_size"] = batch_size
         super().__init__(batch_size=batch_size, *args,**kwargs)
         
 

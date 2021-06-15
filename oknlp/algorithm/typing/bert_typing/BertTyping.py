@@ -23,6 +23,8 @@ class BertTyping(BaseTyping):
             "providers": providers,
             'types': types
         }
+        if "batch_size" not in kwargs:
+            kwargs["batch_size"] = batch_size
         super().__init__(batch_size=batch_size, *args, **kwargs)
        
 
