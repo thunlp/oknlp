@@ -22,8 +22,7 @@ class BertCWS(BaseCWS):
             "model_path": model_path,
             "providers": providers
         }
-        self.batch_size = batch_size
-        super().__init__(*args,**kwargs)
+        super().__init__(batch_size=batch_size, *args, **kwargs)
 
     def preprocess(self, x, *args, **kwargs):
         if not self.config['inited']:

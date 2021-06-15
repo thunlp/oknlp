@@ -23,8 +23,7 @@ class BertTyping(BaseTyping):
             "providers": providers,
             'types': types
         }
-        self.batch_size = batch_size
-        super().__init__(*args,**kwargs)
+        super().__init__(batch_size=batch_size, *args, **kwargs)
        
 
     def preprocess(self, x, *args, **kwargs):

@@ -47,12 +47,13 @@ def get_provider(device = None):
 
     if 'cpu' in device:
         providers = [d_cpu]
+        batch_size = 1
     elif 'cuda' in device:
         d_cuda[1]['device_id'] = get_device_id(device)
         if d_cuda[1]['device_id'] in fp16_device:
             fp16_mode = True
         batch_size, mem_avl = adaptive_batch_size(d_cuda[1]['device_id'], fp16_mode)    
-        d_cuda[1]['cuda_mem_limit'] = mem_avl
+        d_cuda[1]['cuda_mem_limit'] = mem_avl <<30
         providers = [d_cuda, d_cpu]
 
     return providers, fp16_mode ,batch_size
