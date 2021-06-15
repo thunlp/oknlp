@@ -24,7 +24,7 @@ class BertNER(BaseNER):
         }
         if "batch_size" not in kwargs:
             kwargs["batch_size"] = batch_size
-        super().__init__(batch_size=batch_size, *args,**kwargs)
+        super().__init__(*args,**kwargs)
         
 
     def preprocess(self, x, *args, **kwargs):
@@ -61,8 +61,5 @@ class BertNER(BaseNER):
         input_feed = {self.input_name: input_array, self.att_name: att_array }
 
         pred_onx = self.sess.run([self.label_name],input_feed)[0]
-        mask = np.array([i[2] for i in batch]) != -1
         pred_onx = [i[0][:len(i[1])] for i in list(zip(pred_onx, [i[2] for i in batch]))]
-        pred_onx = np.where(mask, pred_onx, -1).tolist() 
-
         return list(zip([i[0] for i in batch],pred_onx))#合并句子和结果

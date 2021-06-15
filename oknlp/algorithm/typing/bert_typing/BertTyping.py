@@ -25,7 +25,7 @@ class BertTyping(BaseTyping):
         }
         if "batch_size" not in kwargs:
             kwargs["batch_size"] = batch_size
-        super().__init__(batch_size=batch_size, *args, **kwargs)
+        super().__init__(*args, **kwargs)
        
 
     def preprocess(self, x, *args, **kwargs):
@@ -61,11 +61,11 @@ class BertTyping(BaseTyping):
             self.att_name = self.sess.get_inputs()[2].name
             self.label_name = self.sess.get_outputs()[0].name
             self.config['inited'] = True
-        x, y, at = np.stack(tuple(batch),axis=1)
-        max_len = max([len(i) for i in x])
-        input_feed = {self.input_name: [np.array(i + [0] * (max_len - len(i))).astype(np.int32) for i in x], 
-            self.pos: [np.array(i).astype(np.int64) for i in y], 
-            self.att_name: [np.array(i + [0] * (max_len - len(i))).astype(np.int32) for i in at]}
+        #x, y, at = np.stack(tuple(batch),axis=1)
+        max_len = max([len(i[0]) for i in batch])
+        input_feed = {self.input_name: [np.array(i[0] + [0] * (max_len - len(i[0]))).astype(np.int32) for i in batch], 
+            self.pos: [np.array(i[1]).astype(np.int64) for i in batch], 
+            self.att_name: [np.array(i[2] + [0] * (max_len - len(i[2]))).astype(np.int32) for i in batch]}
         pred_onx = self.sess.run([self.label_name], input_feed)[0]
         return pred_onx
     

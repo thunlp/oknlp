@@ -57,10 +57,7 @@ class BertCWS(BaseCWS):
         input_array = [np.array(i[1] + [0] * (max_len - len(i[1]))).astype(np.int32) for i in batch]
         att_array = [np.array(i[3] + [0] * (max_len - len(i[3]))).astype(np.int32) for i in batch]
         input_feed = {self.input_name: input_array, self.att_name: att_array }
-        
+
         pred_onx = self.sess.run([self.label_name],input_feed)[0]
-        
-        mask = [i[2] for i in batch] != -1
         pred_onx = [i[0][:len(i[1])] for i in list(zip(pred_onx, [i[2] for i in batch]))]
-        pred_onx = np.where(mask, pred_onx, -1).tolist() 
         return list(zip([i[0] for i in batch],pred_onx))#合并句子和结果
