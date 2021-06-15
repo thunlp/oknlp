@@ -11,7 +11,7 @@ class BertTyping(BaseTyping):
     """使用Bert模型实现的Typing算法
     """
     def __init__(self, device=None, *args, **kwargs):
-        providers, fp16_mode = get_provider(device)
+        providers, fp16_mode, batch_size = get_provider(device)
         if not fp16_mode:
             model_path = load('typing.bert','fp32')
         else:
@@ -23,7 +23,9 @@ class BertTyping(BaseTyping):
             "providers": providers,
             'types': types
         }
-        super().__init__(*args,**kwargs)
+        if "batch_size" not in kwargs:
+            kwargs["batch_size"] = batch_size
+        super().__init__(*args, **kwargs)
        
 
     def preprocess(self, x, *args, **kwargs):
@@ -50,17 +52,20 @@ class BertTyping(BaseTyping):
         if not self.config['inited']:
             sess_options = rt.SessionOptions()
             sess_options.graph_optimization_level = rt.GraphOptimizationLevel.ORT_ENABLE_ALL
+            if hasattr(os, "sched_getaffinity") and len(os.sched_getaffinity(0)) < os.cpu_count():
+                sess_options.intra_op_num_threads = 1
+                sess_options.inter_op_num_threads = 1
             self.sess = rt.InferenceSession(os.path.join(self.config['model_path'],'model.onnx'),sess_options,providers=self.config['providers'])
             self.input_name = self.sess.get_inputs()[0].name
             self.pos = self.sess.get_inputs()[1].name 
             self.att_name = self.sess.get_inputs()[2].name
             self.label_name = self.sess.get_outputs()[0].name
             self.config['inited'] = True
-        x, y, at = np.stack(tuple(batch),axis=1)
-        max_len = max([len(i) for i in x])
-        input_feed = {self.input_name: [np.array(i + [0] * (max_len - len(i))).astype(np.int32) for i in x], 
-            self.pos: [np.array(i).astype(np.int64) for i in y], 
-            self.att_name: [np.array(i + [0] * (max_len - len(i))).astype(np.int32) for i in at]}
+        #x, y, at = np.stack(tuple(batch),axis=1)
+        max_len = max([len(i[0]) for i in batch])
+        input_feed = {self.input_name: [np.array(i[0] + [0] * (max_len - len(i[0]))).astype(np.int32) for i in batch], 
+            self.pos: [np.array(i[1]).astype(np.int64) for i in batch], 
+            self.att_name: [np.array(i[2] + [0] * (max_len - len(i[2]))).astype(np.int32) for i in batch]}
         pred_onx = self.sess.run([self.label_name], input_feed)[0]
         return pred_onx
     

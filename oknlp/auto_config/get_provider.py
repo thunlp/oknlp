@@ -1,5 +1,6 @@
 import re
 import onnxruntime
+from .adaptive_batch_size import adaptive_batch_size
 from .gpu_scheduler import get_gpu_info, get_gpu_utilization, get_gpumem_utilization
 
 def get_device_id(device):
@@ -22,16 +23,17 @@ def generate_device(device_list, type = 'gpu'):
         device = 'cpu'
     return device
 
-def get_provider(device=None):
-    
+def get_provider(device = None):
+    batch_size = 1
     d_cuda = ('CUDAExecutionProvider',{
               'device_id': 0,
               'arena_extend_strategy': 'kNextPowerOfTwo',
-              'cudnn_conv_algo_search': 'EXHAUSTIVE'
+              'cudnn_conv_algo_search': 'EXHAUSTIVE',
+              'cuda_mem_limit': 1<<30
             })
     d_cpu = 'CPUExecutionProvider'
     if 'CUDAExecutionProvider' not in onnxruntime.get_available_providers():
-        return [d_cpu], False
+        return [d_cpu], False, batch_size
     fp16_mode = False
 
     comp_usable = [i['gpu_id'] for i in get_gpu_utilization() if i['gpu_rate'] <0.2]
@@ -42,14 +44,17 @@ def get_provider(device=None):
     
     if device == None:
         device = generate_device(device_list)
-
+    
     if 'cpu' in device:
         providers = [d_cpu]
+        batch_size = 1
     elif 'cuda' in device:
         d_cuda[1]['device_id'] = get_device_id(device)
         if d_cuda[1]['device_id'] in fp16_device:
             fp16_mode = True
+        batch_size, mem_avl = adaptive_batch_size(d_cuda[1]['device_id'], fp16_mode)    
+        d_cuda[1]['cuda_mem_limit'] = mem_avl <<30
         providers = [d_cuda, d_cpu]
 
-    return providers, fp16_mode 
+    return providers, fp16_mode, batch_size
 

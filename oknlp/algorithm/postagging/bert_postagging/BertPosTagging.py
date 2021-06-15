@@ -14,7 +14,7 @@ class BertPosTagging(BasePosTagging):
     """
 
     def __init__(self, device=None, *args, **kwargs):
-        providers, fp16_mode = get_provider(device)
+        providers, fp16_mode, batch_size = get_provider(device)
         if not fp16_mode:
             model_path = load('postagging.bert','fp32')
         else:
@@ -24,6 +24,8 @@ class BertPosTagging(BasePosTagging):
             "model_path": model_path,
             "providers": providers
         }
+        if "batch_size" not in kwargs:
+            kwargs["batch_size"] = batch_size
         super().__init__(*args,**kwargs)
 
 
@@ -48,6 +50,9 @@ class BertPosTagging(BasePosTagging):
         if not self.config['inited']:
             sess_options = rt.SessionOptions()
             sess_options.graph_optimization_level = rt.GraphOptimizationLevel.ORT_ENABLE_ALL
+            if hasattr(os, "sched_getaffinity") and len(os.sched_getaffinity(0)) < os.cpu_count():
+                sess_options.intra_op_num_threads = 1
+                sess_options.inter_op_num_threads = 1
             self.sess = rt.InferenceSession(os.path.join(self.config['model_path'],'model.onnx'),sess_options, providers=self.config['providers'])
             self.input_name = self.sess.get_inputs()[0].name
             self.att_name = self.sess.get_inputs()[1].name 
@@ -59,6 +64,6 @@ class BertPosTagging(BasePosTagging):
         input_feed = {self.input_name: input_array, 
             self.att_name: att_array}
         pred_onx = self.sess.run([self.label_name],input_feed)[0]
-        mask = np.array([i[2] for i in batch]) != -1
+
         pred_onx = [i[0][:len(i[1])] for i in list(zip(pred_onx, [i[2] for i in batch]))]
-        return list(zip([i[0] for i in batch],np.where(mask, pred_onx, -1).tolist()))
+        return list(zip([i[0] for i in batch], pred_onx))
