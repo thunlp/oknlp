@@ -23,7 +23,7 @@ def generate_device(device_list, type = 'gpu'):
         device = 'cpu'
     return device
 
-def get_provider(device = None):
+def get_provider_new(device = None):
     batch_size = 1
     d_cuda = ('CUDAExecutionProvider',{
               'device_id': 0,
@@ -31,7 +31,7 @@ def get_provider(device = None):
               'cudnn_conv_algo_search': 'EXHAUSTIVE',
               'cuda_mem_limit': 1<<30
             })
-    d_cpu = 'CPUExecutionProvider'
+    d_cpu = ('CPUExecutionProvider',{})
     if 'CUDAExecutionProvider' not in onnxruntime.get_available_providers():
         return [d_cpu], False, batch_size
     fp16_mode = False
@@ -58,3 +58,8 @@ def get_provider(device = None):
 
     return providers, fp16_mode, batch_size
 
+def get_provider(device = None):
+    providers, fp16_mode, batch_size = get_provider_new(device)
+    provider = [i[0] for i in providers]
+    provider_op = [i[1] for i in providers]
+    return provider, provider_op, fp16_mode, batch_size

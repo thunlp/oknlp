@@ -13,7 +13,7 @@ labels = reduce(lambda x, y: x+y, [[f"{kd}-{l}" for kd in ('B','I','O')] for l i
 class BertCWS(BaseCWS):
     def __init__(self, device = None, *args, **kwargs):
 
-        providers, fp16_mode, batch_size = get_provider(device)
+        provider, provider_op, fp16_mode, batch_size = get_provider(device)
         if not fp16_mode:
             model_path = load('cws.bert','fp32')
         else:
@@ -21,7 +21,8 @@ class BertCWS(BaseCWS):
         self.config = {
             "inited": False,
             "model_path": model_path,
-            "providers": providers
+            "provider": provider,
+            "provider_option": provider_op
         }
         if "batch_size" not in kwargs:
             kwargs["batch_size"] = batch_size
@@ -47,7 +48,11 @@ class BertCWS(BaseCWS):
             if hasattr(os, "sched_getaffinity") and len(os.sched_getaffinity(0)) < os.cpu_count():
                 sess_options.intra_op_num_threads = 1
                 sess_options.inter_op_num_threads = 1
-            self.sess = rt.InferenceSession(os.path.join(self.config['model_path'],'model.onnx'),sess_options, providers=self.config['providers'])
+            self.sess = rt.InferenceSession(
+                os.path.join(self.config['model_path'],'model.onnx'),
+                sess_options, 
+                providers=self.config['provider'], 
+                provider_options=self.config["provider_option"])
             self.input_name = self.sess.get_inputs()[0].name
             self.att_name = self.sess.get_inputs()[1].name 
             self.label_name = self.sess.get_outputs()[0].name
