@@ -22,16 +22,15 @@ class BertCWS(BaseCWS):
             "inited": False,
             "model_path": model_path,
             "provider": provider,
-            "provider_option": provider_op
+            "provider_option": provider_op,
+            'tokenizer': BertTokenizer.from_pretrained("bert-base-chinese"),
         }
         if "batch_size" not in kwargs:
             kwargs["batch_size"] = batch_size
         super().__init__(*args, **kwargs)
 
     def preprocess(self, x, *args, **kwargs):
-        if not self.config['inited']:
-            self.tokenizer = BertTokenizer.from_pretrained("bert-base-chinese")
-            self.config['inited'] = True
+        self.tokenizer = self.config['tokenizer']
         tokens = self.tokenizer.tokenize(x)
         sx = self.tokenizer.convert_tokens_to_ids(['[CLS]'] + tokens + ['[SEP]']) 
         sy = [-1] + [0] * len(tokens) +[-1]
