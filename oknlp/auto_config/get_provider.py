@@ -62,4 +62,5 @@ def get_provider(device = None):
     providers, fp16_mode, batch_size = get_provider_new(device)
     provider = [i[0] for i in providers]
     provider_op = [i[1] for i in providers]
+    provider_op = [{key: str(value) for (key, value) in d.items()} for d in provider_op]
     return provider, provider_op, fp16_mode, batch_size

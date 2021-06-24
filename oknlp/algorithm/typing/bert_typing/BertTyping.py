@@ -22,7 +22,8 @@ class BertTyping(BaseTyping):
             "model_path": model_path,
             "provider": provider,
             "provider_option": provider_op,
-            'types': types
+            'types': types,
+            'tokenizer': BertTokenizer.from_pretrained("bert-base-chinese"),
         }
         if "batch_size" not in kwargs:
             kwargs["batch_size"] = batch_size
@@ -30,10 +31,7 @@ class BertTyping(BaseTyping):
        
 
     def preprocess(self, x, *args, **kwargs):
-        if not self.config['inited']:
-            self.tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')
-            self.tokenizer.add_special_tokens({'additional_special_tokens': ["<ent>", "</ent>"]})
-            self.config['inited'] = True
+        self.tokenizer = self.config['tokenizer']
         text, span = x
         text = text[:span[0]] + '<ent>' + text[span[0]: span[1]] + '</ent>' + text[span[1]:]
         sx = self.tokenizer.convert_tokens_to_ids(self.tokenizer.tokenize(text))

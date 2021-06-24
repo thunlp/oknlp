@@ -12,7 +12,7 @@ DEFAULT_CONFIG = {
 class Config:
     """
     Attributes:
-        path: list[str]
+        path: str
         source: str, data source url ending with "/"
     """
 

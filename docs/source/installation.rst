@@ -13,6 +13,6 @@
 
 .. code-block:: sh
 
-    git clone https://github.com/PLNUHT/ink.git
+    git clone https://github.com/PLNUHT/oknlp.git
     cd oknlp
     python setup.py install

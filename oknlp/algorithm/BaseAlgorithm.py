@@ -1,6 +1,7 @@
 import multiprocessing as mp
 from multiprocessing.connection import Client, Listener, wait
 from multiprocessing import Process, Queue
+import queue
 from queue import Empty
 import threading
 import sys
@@ -240,28 +241,44 @@ class BaseAlgorithm:
     def _infer(self, from_queue: Queue, to_queue: Queue):
         """将数据从from_queue中取出，推理后放入to_queue
         """
-        while True:  
-            batch_info = []
-            batch_data = []
-
-            serial_idx, idx, data = from_queue.get()
+        def get_batch(from_queue: queue.Queue, to_queue: queue.Queue):
+            """一个线程负责组装batch
+            """
             while True:
-                batch_info.append((serial_idx, idx))
-                batch_data.append(data)
-                if len(batch_data) >= self.batch_size:
-                    # 1. == batch_size
-                    break
-                try:
-                    # try to get more
-                    serial_idx, idx, data = from_queue.get_nowait()
-                except Empty:
-                    # 2. Queue is empty
-                    break     
-            batch_data = self.inference(batch_data)
+                batch_info = []
+                batch_data = []
 
-            for info, data in zip(batch_info, batch_data):
-                serial_idx, idx = info
-                to_queue.put((serial_idx, idx, data))
+                serial_idx, idx, data = from_queue.get()
+                while True:
+                    batch_info.append((serial_idx, idx))
+                    batch_data.append(data)
+                    if len(batch_data) >= self.batch_size:
+                        # 1. == batch_size
+                        break
+                    try:
+                        # try to get more
+                        serial_idx, idx, data = from_queue.get(True, 0.1)
+                    except Empty:
+                        # 2. Queue is empty
+                        break
+                to_queue.put((batch_info, batch_data))        
+
+        def infer_scatter(from_queue, to_queue):
+            """一个线程负责(给gpu)infer
+            """
+            while True:
+                (batch_info, batch_data) = from_queue.get()
+                batch_data = self.inference(batch_data)
+
+                for info, data in zip(batch_info, batch_data):
+                    serial_idx, idx = info
+                    to_queue.put((serial_idx, idx, data))
+        batch_queue = queue.Queue(10000)
+        t_batch = threading.Thread(target=get_batch, args=(from_queue, batch_queue), daemon=True)
+        t_infer = threading.Thread(target=infer_scatter, args=(batch_queue, to_queue), daemon=True)
+        t_batch.start()
+        t_infer.start()
+        t_batch.join()
 
     def _postprocess(self, from_queue: Queue, to_queue: Queue):
         """将数据从from_queue中取出，后处理后放入to_queue

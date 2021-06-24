@@ -6,8 +6,8 @@
     import oknlp
 
 
-    typing = oknlp.typing.get_by_name(name="bert")
-    typing.to("cuda:1")
+    config = {'batch_size': 16, 'device': 'cuda:0'}
+    typing = oknlp.typing.get_by_name(name="bert", **config)
     sents = [
         ("3月15日,北方多地正遭遇近10年来强度最大、影响范围最广的沙尘暴。", [30, 33]),
     ]
