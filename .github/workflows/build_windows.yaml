@@ -22,7 +22,7 @@ jobs:
           python-version: ${{ matrix.python }}
           architecture: 'x64'
       - name: Build wheel
-        runs: pip wheel . --no-deps -w dist
+        run: pip wheel . --no-deps -w dist
       - uses: actions/upload-artifact@v2
         with:
           name: windows-build
