@@ -1,5 +1,8 @@
 name: Test Mac OS
-on: push
+on:
+  push:
+    tags-ignore:
+      - *
 jobs:
   test:
     runs-on: macos-latest

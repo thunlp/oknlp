@@ -1,5 +1,8 @@
 name: Test Windows
-on: push
+on:
+  push:
+    tags-ignore:
+      - *
 jobs:
   test:
     runs-on: windows-latest

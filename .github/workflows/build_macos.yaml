@@ -1,23 +1,34 @@
-name: Build Linux
+name: Build Mac OS
 on:
   release:
     types:
       - published
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python:
+        - "3.6"
+        - "3.7"
+        - "3.8"
+        - "3.9"
+        - "3.10"
     steps:
       - uses: actions/checkout@v2
-      - uses: docker://quay.io/pypa/manylinux2010_x86_64
+      - uses: actions/setup-python@v2
         with:
-          entrypoints: /bin/sh
-          args: scripts/build-manylinux.sh
+          python-version: ${{ matrix.python }}
+          architecture: 'x64'
+      - name: Build wheel
+        runs: pip wheel . --no-deps -w dist
       - uses: actions/upload-artifact@v2
         with:
-          name: manylinux-build
+          name: macos-build
           path: dist/*.whl
   test:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     needs: build
     strategy:
       fail-fast: true
@@ -48,7 +59,7 @@ jobs:
         key: ${{ runner.os }}-oknlp
     - uses: actions/download-artifact@v2
       with:
-        name: manylinux-build
+        name: macos-build
         path: dist
     - name: Run test script
       run: |
@@ -69,7 +80,7 @@ jobs:
         architecture: 'x64'
     - uses: actions/download-artifact@v2
       with:
-        name: manylinux-build
+        name: macos-build
         path: dist
     - name: Publish distribution 📦 to PyPI
       uses: pypa/gh-action-pypi-publish@master
