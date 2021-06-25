@@ -33,7 +33,7 @@ jobs:
       run: |
         python setup.py sdist bdist_wheel
         pip install onnxruntime
-        pip install dist/*.whl 
+        FOR %%i in (dist\*.whl) DO python -m pip install %i
         cd tests
         python run_tests.py
 
