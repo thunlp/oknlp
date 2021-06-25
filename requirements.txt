@@ -3,5 +3,4 @@ requests
 tqdm
 transformers>=4
 kara-storage
-onnxruntime
 py3nvml
