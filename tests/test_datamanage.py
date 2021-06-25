@@ -1,7 +1,6 @@
 import unittest
 import os, shutil
 
-HOME = os.environ["HOME"]
 DATA_DIR = os.path.abspath("./testdir")
 
 class TestDataManager(unittest.TestCase):
