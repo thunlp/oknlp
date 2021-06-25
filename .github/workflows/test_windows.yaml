@@ -33,7 +33,7 @@ jobs:
       run: |
         python setup.py sdist bdist_wheel
         pip install onnxruntime
-        pip install --no-index --find-links=dist oknlp
+        pip install dist/*.whl 
         cd tests
         python run_tests.py
 
