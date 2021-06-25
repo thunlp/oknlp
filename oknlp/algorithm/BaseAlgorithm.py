@@ -1,6 +1,5 @@
 import multiprocessing as mp
 from multiprocessing.connection import Client, Listener, wait
-from multiprocessing import Process, Queue
 import queue
 from queue import Empty
 import threading
@@ -10,7 +9,7 @@ import warnings
 
 
 class AlgorithmServer:
-    def __init__(self, q_input: Queue, q_output: Queue, address=None, family=None) -> None:
+    def __init__(self, q_input: mp.Queue, q_output: mp.Queue, address=None, family=None) -> None:
         self.listener = Listener(address=address, family=family)
         self.conn_list = []
         self.q_input = q_input
@@ -89,20 +88,60 @@ class AlgorithmServer:
 
         self.t_listener.join()
 
+class BatchBuilder:
+    def __init__(self, from_queue : queue.Queue, to_queue : queue.Queue, batch_size : int, pack_func = None):
+        self.from_queue = from_queue
+        self.to_queue = to_queue
+        self.pack_func = pack_func
+        self.inference = False
+        self.batch_size = batch_size
+    
+    def main(self):
+        """一个线程负责组装batch
+        """
+        while True:
+            batch_info = []
+            batch_data = []
+
+            serial_idx, idx, data = self.from_queue.get()
+            while True:
+                batch_info.append((serial_idx, idx))
+                batch_data.append(data)
+                if len(batch_data) >= self.batch_size:
+                    # 1. == batch_size
+                    break
+                try:
+                    # try to get more
+                    serial_idx, idx, data = self.from_queue.get_nowait()
+                except Empty:
+                    # 2. Queue is empty
+                    if self.inference:
+                        continue
+                    else:
+                        break
+            if self.pack_func is not None:
+                batch_data = self.pack_func(batch_data)
+            self.to_queue.put((batch_info, batch_data))
 
 class BaseAlgorithm:
     '''算法类的基类，派生类需要实现preprocess(self, x)、infer(self, batch)、postprocess(self, x)方法
     '''
-    def __init__(self, batch_size=1, num_preprocess=None, num_postprocess=None, max_queue_size=10000):
+    def __init__(self, batch_size=1, num_preprocess=None, num_postprocess=None, max_queue_size=1024, multiprocessing_context = None):
         if num_preprocess is None:
-            num_preprocess = min(mp.cpu_count(),4)
+            num_preprocess = min(mp.cpu_count(), 4)
         if num_postprocess is None:
-            num_postprocess = min(mp.cpu_count(),4)
+            num_postprocess = min(mp.cpu_count(), 4)
         self.batch_size = batch_size
-        self.raw_queue = Queue(max_queue_size)  # raw
-        self.pre_queue = Queue(max_queue_size)  # after preprocess
-        self.infer_queue = Queue(max_queue_size)  # after infer
-        self.post_queue = Queue(max_queue_size)  # after postprocess
+
+        if multiprocessing_context is None and "fork" in mp.get_all_start_methods():
+            multiprocessing_context = "fork"
+        multiprocessing = mp.get_context(multiprocessing_context)
+
+        self.raw_queue = multiprocessing.Queue(max_queue_size)  # raw
+        self.pre_queue = multiprocessing.Queue(max_queue_size)  # after preprocess
+        self.infer_queue = multiprocessing.Queue(max_queue_size)  # after infer
+        self.post_queue = multiprocessing.Queue(max_queue_size)  # after postprocess
+
         if sys.platform == "win32":
             # using named pipe
             import random
@@ -116,10 +155,10 @@ class BaseAlgorithm:
             self.__family = "AF_UNIX"
         __evt_server_start = mp.Event()
 
-        p_preprocess = [Process(target=self._preprocess, args=(self.raw_queue, self.pre_queue), daemon=True) for _ in range(num_preprocess)]
-        p_infer = Process(target=self._infer, args=(self.pre_queue, self.infer_queue), daemon=True)
-        p_postprocess = [Process(target=self._postprocess, args=(self.infer_queue, self.post_queue), daemon=True) for _ in range(num_postprocess)]
-        p_listener = Process(target=self._listener, args=(self.raw_queue, self.post_queue, self.__address, self.__family, __evt_server_start), daemon=True)
+        p_preprocess = [multiprocessing.Process(target=self._preprocess, args=(self.raw_queue, self.pre_queue), daemon=True) for _ in range(num_preprocess)]
+        p_infer = multiprocessing.Process(target=self._infer, args=(self.pre_queue, self.infer_queue), daemon=True)
+        p_postprocess = [multiprocessing.Process(target=self._postprocess, args=(self.infer_queue, self.post_queue), daemon=True) for _ in range(num_postprocess)]
+        p_listener = multiprocessing.Process(target=self._listener, args=(self.raw_queue, self.post_queue, self.__address, self.__family, __evt_server_start), daemon=True)
 
         for p in p_preprocess:
             p.start()
@@ -138,7 +177,7 @@ class BaseAlgorithm:
 
         self._reinit_client()
 
-    def _listener(self, q_input: Queue, q_output: Queue, address, family, __evt_server_start):
+    def _listener(self, q_input: mp.Queue, q_output: mp.Queue, address, family, __evt_server_start):
         server = AlgorithmServer(q_input, q_output, address, family)
         __evt_server_start.set()
         server.start()
@@ -230,63 +269,55 @@ class BaseAlgorithm:
             result = self._result_dict[thread_id]['result']
         return result
 
-    def _preprocess(self, from_queue: Queue, to_queue: Queue):
+    def _preprocess(self, from_queue: mp.Queue, to_queue: mp.Queue):
         """将数据从from_queue中取出，预处理后放入to_queue
         """
+        self.init_preprocess()
         while True:
             serial_idx, idx, data = from_queue.get()
             data = self.preprocess(data)
             to_queue.put((serial_idx, idx, data))
 
-    def _infer(self, from_queue: Queue, to_queue: Queue):
+    def _infer(self, from_queue: mp.Queue, to_queue: mp.Queue):
         """将数据从from_queue中取出，推理后放入to_queue
         """
-        def get_batch(from_queue: queue.Queue, to_queue: queue.Queue):
-            """一个线程负责组装batch
-            """
-            while True:
-                batch_info = []
-                batch_data = []
+        
+        self.init_inference()
 
-                serial_idx, idx, data = from_queue.get()
-                while True:
-                    batch_info.append((serial_idx, idx))
-                    batch_data.append(data)
-                    if len(batch_data) >= self.batch_size:
-                        # 1. == batch_size
-                        break
-                    try:
-                        # try to get more
-                        serial_idx, idx, data = from_queue.get(True, 0.1)
-                    except Empty:
-                        # 2. Queue is empty
-                        break
-                to_queue.put((batch_info, batch_data))        
-
-        def infer_scatter(from_queue, to_queue):
-            """一个线程负责(给gpu)infer
-            """
-            while True:
-                (batch_info, batch_data) = from_queue.get()
-                batch_data = self.inference(batch_data)
-
-                for info, data in zip(batch_info, batch_data):
-                    serial_idx, idx = info
-                    to_queue.put((serial_idx, idx, data))
-        batch_queue = queue.Queue(10000)
-        t_batch = threading.Thread(target=get_batch, args=(from_queue, batch_queue), daemon=True)
-        t_infer = threading.Thread(target=infer_scatter, args=(batch_queue, to_queue), daemon=True)
+        batch_queue = queue.Queue(1)
+        builder = BatchBuilder(from_queue, batch_queue, self.batch_size, self.pack_batch)
+        t_batch = threading.Thread(target=builder.main, daemon=True)
         t_batch.start()
-        t_infer.start()
-        t_batch.join()
+        
+        while True:
+            (batch_info, batch_data) = batch_queue.get()
+            builder.inference = True
+            batch_data = self.inference(batch_data)
+            builder.inference = False
+            for info, data in zip(batch_info, batch_data):
+                serial_idx, idx = info
+                to_queue.put((serial_idx, idx, data))
 
-    def _postprocess(self, from_queue: Queue, to_queue: Queue):
+    def _postprocess(self, from_queue: mp.Queue, to_queue: mp.Queue):
         """将数据从from_queue中取出，后处理后放入to_queue
         """
+        self.init_postprocess()
         while True:
             serial_idx, idx, data = from_queue.get()
             data = self.postprocess(data)
             to_queue.put((serial_idx, idx, data))
+    
+    def pack_batch(self, batch):
+        return batch
+    
+    def init_preprocess(self):
+        pass
+
+    def init_inference(self):
+        pass
+
+    def init_postprocess(self):
+        pass
 
     def preprocess(self, x):
         """对一个输入进行预处理
