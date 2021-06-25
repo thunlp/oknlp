@@ -1,0 +1,39 @@
+name: Test Linux
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python:
+        - "3.6"
+        - "3.7"
+        - "3.8"
+        - "3.9"
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python }}
+        architecture: 'x64'
+    - uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    - uses: actions/cache@v2
+      with:
+        path: |
+          ~/.oknlp
+        key: ${{ runner.os }}-oknlp
+    - name: Run test script
+      run: |
+        python setup.py sdist bdist_wheel
+        pip install onnxruntime
+        pip install ./dist/*.whl 
+        cd tests
+        python run_tests.py
+
