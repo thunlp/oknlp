@@ -1,0 +1,81 @@
+name: Build Linux
+on:
+  release:
+    types:
+      - published
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+          architecture: 'x64'
+      - uses: docker://quay.io/pypa/manylinux2010_x86_64
+        with:
+          entrypoints: /bin/sh
+          args: scripts/build-manylinux.sh
+      - uses: actions/upload-artifact@v2
+        with:
+          name: manylinux-build
+          path: dist/*.whl
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      fail-fast: true
+      matrix:
+        python:
+        - "3.6"
+        - "3.7"
+        - "3.8"
+        - "3.9"
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python }}
+        architecture: 'x64'
+    - uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    - uses: actions/cache@v2
+      with:
+        path: |
+          ~/.oknlp
+        key: ${{ runner.os }}-oknlp
+    - uses: actions/download-artifact@v2
+      with:
+        name: manylinux-build
+        path: dist
+    - name: Run test script
+      run: |
+        pip install onnxruntime
+        pip install --no-index --find-links=dist oknlp
+        cd tests
+        python run_tests.py
+  
+  # upload:
+  #   runs-on: ubuntu-latest
+  #   needs: [ build, test ]
+  #   steps:
+  #   - uses: actions/checkout@v2
+  #   - uses: actions/setup-python@v2
+  #     with:
+  #       python-version: ${{ matrix.python }}
+  #       architecture: 'x64'
+  #   - uses: actions/download-artifact@v2
+  #     with:
+  #       name: manylinux-build
+  #       path: dist
+  #   - name: Publish distribution 📦 to PyPI
+  #     uses: pypa/gh-action-pypi-publish@master
+  #     with:
+  #       user: __token__
+  #       password: ${{ secrets.PYPI_PASSWORD }}
+  #       skip_existing: true
