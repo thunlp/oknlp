@@ -27,7 +27,7 @@ jobs:
       with:
         path: |
           ~/.oknlp
-        key: ${{ runner.os }}-oknlp
+        key: oknlp
     - name: Run test script
       run: |
         python setup.py sdist bdist_wheel
