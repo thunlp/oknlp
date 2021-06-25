@@ -1,6 +1,6 @@
 import os
 import json
-from transformers import BertTokenizer
+from transformers import BertTokenizerFast
 import numpy as np
 import onnxruntime as rt
 from ..BaseTyping import BaseTyping
@@ -23,50 +23,61 @@ class BertTyping(BaseTyping):
             "provider": provider,
             "provider_option": provider_op,
             'types': types,
-            'tokenizer': BertTokenizer.from_pretrained("bert-base-chinese"),
         }
         if "batch_size" not in kwargs:
             kwargs["batch_size"] = batch_size
         super().__init__(*args, **kwargs)
        
+    def init_preprocess(self):
+        self.tokenizer = BertTokenizerFast.from_pretrained("bert-base-multilingual-cased")
+        self.tokenizer.add_special_tokens({'additional_special_tokens':["<ent>","</ent>"]})
 
     def preprocess(self, x, *args, **kwargs):
-        self.tokenizer = self.config['tokenizer']
         text, span = x
         text = text[:span[0]] + '<ent>' + text[span[0]: span[1]] + '</ent>' + text[span[1]:]
         sx = self.tokenizer.convert_tokens_to_ids(self.tokenizer.tokenize(text))
-        sy = [text.index('<ent>')]
-        sat = [1] * (len(sx)) 
-        return sx, sy , sat
+        sy = text.index('<ent>')
+        return sx, sy
 
+    def init_postprocess(self):
+        self.types = self.config["types"]
 
     def postprocess(self, x, *args, **kwargs):
-        result = []
-        for i, score in enumerate(x):
-            if float(score) > 0.1:
-                result.append((self.config['types'][i], float(score)))
+        result = [
+            (self.types[i], x[i]) for i in np.where(x > 0.1)[0]
+        ]
         return result
 
-    def inference(self, batch):
-        if not self.config['inited']:
-            sess_options = rt.SessionOptions()
-            sess_options.graph_optimization_level = rt.GraphOptimizationLevel.ORT_ENABLE_ALL
-            if hasattr(os, "sched_getaffinity") and len(os.sched_getaffinity(0)) < os.cpu_count():
-                sess_options.intra_op_num_threads = 1
-                sess_options.inter_op_num_threads = 1
-            self.sess = rt.InferenceSession(os.path.join(self.config['model_path'],'model.onnx'),sess_options,
-                providers=self.config['provider'], 
-                provider_options=self.config["provider_option"])
-            self.input_name = self.sess.get_inputs()[0].name
-            self.pos = self.sess.get_inputs()[1].name 
-            self.att_name = self.sess.get_inputs()[2].name
-            self.label_name = self.sess.get_outputs()[0].name
-            self.config['inited'] = True
-        #x, y, at = np.stack(tuple(batch),axis=1)
-        max_len = max([len(i[0]) for i in batch])
-        input_feed = {self.input_name: [np.array(i[0] + [0] * (max_len - len(i[0]))).astype(np.int32) for i in batch], 
-            self.pos: [np.array(i[1]).astype(np.int64) for i in batch], 
-            self.att_name: [np.array(i[2] + [0] * (max_len - len(i[2]))).astype(np.int32) for i in batch]}
+    def init_inference(self):
+        sess_options = rt.SessionOptions()
+        sess_options.graph_optimization_level = rt.GraphOptimizationLevel.ORT_ENABLE_ALL
+        if hasattr(os, "sched_getaffinity") and len(os.sched_getaffinity(0)) < os.cpu_count():
+            sess_options.intra_op_num_threads = 1
+            sess_options.inter_op_num_threads = 1
+        self.sess = rt.InferenceSession(os.path.join(self.config['model_path'],'model.onnx'),sess_options,
+            providers=self.config['provider'], 
+            provider_options=self.config["provider_option"])
+        self.input_name = self.sess.get_inputs()[0].name
+        self.pos_name = self.sess.get_inputs()[1].name 
+        self.att_name = self.sess.get_inputs()[2].name
+        self.label_name = self.sess.get_outputs()[0].name
+
+    def pack_batch(self, batch):
+        max_len = max([len(tokens) for tokens, _ in batch])
+        input_array = np.zeros((len(batch), max_len), dtype=np.int32)
+        att_array = np.zeros((len(batch), max_len), dtype=np.int32)
+        pos_array = np.zeros((len(batch), 1), dtype=np.int64)
+        for i, (tokens, position) in enumerate(batch):
+            input_array[i, :len(tokens)] = tokens
+            pos_array[i, 0] = position
+            att_array[i, :len(tokens)] = 1
+        return {
+            self.input_name: input_array,
+            self.pos_name: pos_array,
+            self.att_name: att_array,
+        }
+
+    def inference(self, input_feed):
         pred_onx = self.sess.run([self.label_name], input_feed)[0]
         return pred_onx
     

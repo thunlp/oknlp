@@ -7,7 +7,6 @@ import onnxruntime as rt
 from ..BaseCWS import BaseCWS
 from ....auto_config import get_provider
 from ....data import load
-import time
 
 labels = reduce(lambda x, y: x+y, [[f"{kd}-{l}" for kd in ('B','I','O')] for l in ('SEG',)])
 class BertCWS(BaseCWS):

@@ -154,11 +154,34 @@ class BaseAlgorithm:
             self.__address = tempfile.mktemp()
             self.__family = "AF_UNIX"
         __evt_server_start = mp.Event()
-
-        p_preprocess = [multiprocessing.Process(target=self._preprocess, args=(self.raw_queue, self.pre_queue), daemon=True) for _ in range(num_preprocess)]
-        p_infer = multiprocessing.Process(target=self._infer, args=(self.pre_queue, self.infer_queue), daemon=True)
-        p_postprocess = [multiprocessing.Process(target=self._postprocess, args=(self.infer_queue, self.post_queue), daemon=True) for _ in range(num_postprocess)]
-        p_listener = multiprocessing.Process(target=self._listener, args=(self.raw_queue, self.post_queue, self.__address, self.__family, __evt_server_start), daemon=True)
+        p_preprocess = [
+            multiprocessing.Process (
+                name = "%s-preprocess-%d" % (self.__class__.__name__, i),
+                target = self._preprocess, 
+                args = (self.raw_queue, self.pre_queue), 
+                daemon = True
+            ) for i in range(num_preprocess)
+        ]
+        p_infer = multiprocessing.Process (
+            name = "%s-inference" % self.__class__.__name__,
+            target = self._infer, 
+            args = (self.pre_queue, self.infer_queue), 
+            daemon=True
+        )
+        p_postprocess = [
+            multiprocessing.Process (
+                name = "%s-postprocess-%d" % (self.__class__.__name__, i),
+                target = self._postprocess, 
+                args = (self.infer_queue, self.post_queue), 
+                daemon=True
+            ) for i in range(num_postprocess)
+        ]
+        p_listener = multiprocessing.Process (
+            name = "%s-server" % self.__class__.__name__,
+            target = self._listener, 
+            args = (self.raw_queue, self.post_queue, self.__address, self.__family, __evt_server_start), 
+            daemon=True
+        )
 
         for p in p_preprocess:
             p.start()
