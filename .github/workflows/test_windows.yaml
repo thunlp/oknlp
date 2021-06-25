@@ -33,7 +33,7 @@ jobs:
       run: |
         python setup.py sdist bdist_wheel
         pip install onnxruntime
-        FOR %%i in (dist\*.whl) DO python -m pip install %i
+        Get-ChildItem "C:\Users\gerhardl\Documents\My Received Files" -Filter *.log | Foreach-Object { pip install $_.FullName }
         cd tests
         python run_tests.py
 
