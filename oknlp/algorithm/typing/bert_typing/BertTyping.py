@@ -44,7 +44,7 @@ class BertTyping(BaseTyping):
 
     def postprocess(self, x, *args, **kwargs):
         result = [
-            (self.types[i], x[i]) for i in np.where(x > 0.1)[0]
+            (self.types[i], float(x[i])) for i in np.where(x > 0.1)[0]
         ]
         return result
 
