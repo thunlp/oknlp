@@ -7,6 +7,12 @@ import sys
 import time
 import warnings
 
+class SingleQuery:
+    def __init__(self, serial_idx, idx, data, exception=None):
+        self.serial_idx = serial_idx
+        self.idx = idx
+        self.data = data
+        self.exception = exception
 
 class AlgorithmServer:
     def __init__(self, q_input: mp.Queue, q_output: mp.Queue, address=None, family=None) -> None:
@@ -51,6 +57,7 @@ class AlgorithmServer:
                             "conn": conn,
                             "total_size": len(request["data"]),
                             "result": [],
+                            "exception": None,
                             "id": request["id"]
                         }
                         serial_idx = self.serial_id
@@ -58,14 +65,17 @@ class AlgorithmServer:
 
                     # put in queue
                     for idx, it in enumerate(request["data"]):
-                        self.q_input.put((serial_idx, idx, it))
+                        self.q_input.put(SingleQuery(serial_idx, idx, it))
 
     def _thread_gather(self):
         while True:
-            serial_idx, idx, it = self.q_output.get()
+            query = self.q_output.get()
             with self.req_lock:
-                request = self.request_map[serial_idx]
-                request["result"].append((idx, it))
+                request = self.request_map[query.serial_idx]
+                request["result"].append((query.idx, query.data))
+                if query.exception is not None:
+                    request["exception"] = query.exception
+                
                 if len(request["result"]) == request["total_size"]:
                     # send back here
                     # sort by index
@@ -74,7 +84,7 @@ class AlgorithmServer:
                     # remove index
                     list_results = list(map(lambda x: x[1], sorted_results))
                     if not request["conn"].closed:
-                        request["conn"].send({"result": list_results, "id": request["id"]})
+                        request["conn"].send({"result": list_results, "id": request["id"], "exception": request["exception"]})
                 # else do nothing
 
     def start(self):
@@ -89,9 +99,10 @@ class AlgorithmServer:
         self.t_listener.join()
 
 class BatchBuilder:
-    def __init__(self, from_queue : queue.Queue, to_queue : queue.Queue, batch_size : int, pack_func = None):
+    def __init__(self, from_queue : queue.Queue, to_queue : queue.Queue, bypass_queue : queue.Queue, batch_size : int, pack_func = None):
         self.from_queue = from_queue
         self.to_queue = to_queue
+        self.bypass_queue = bypass_queue
         self.pack_func = pack_func
         self.inference = False
         self.batch_size = batch_size
@@ -103,25 +114,42 @@ class BatchBuilder:
             batch_info = []
             batch_data = []
 
-            serial_idx, idx, data = self.from_queue.get()
-            while True:
-                batch_info.append((serial_idx, idx))
-                batch_data.append(data)
-                if len(batch_data) >= self.batch_size:
-                    # 1. == batch_size
-                    break
-                try:
-                    # try to get more
-                    serial_idx, idx, data = self.from_queue.get_nowait()
-                except Empty:
-                    # 2. Queue is empty
-                    if self.inference:
-                        continue
+            try:
+                query = self.from_queue.get()
+                while True:
+                    if query.exception is not None:
+                        self.bypass_queue.put(query)
                     else:
+                        batch_info.append((query.serial_idx, query.idx))
+                        batch_data.append(query.data)
+                    if len(batch_data) >= self.batch_size:
+                        # 1. == batch_size
                         break
-            if self.pack_func is not None:
-                batch_data = self.pack_func(batch_data)
-            self.to_queue.put((batch_info, batch_data))
+                    try:
+                        # try to get more
+                        query = self.from_queue.get_nowait()
+                    except Empty:
+                        # 2. Queue is empty
+                        if self.inference:
+                            continue
+                        else:
+                            break
+                if len(batch_data) == 0: # happends when the first element of this batch has an exception
+                    continue
+
+                if self.pack_func is not None:
+                    batch_data = self.pack_func(batch_data)
+                self.to_queue.put((batch_info, batch_data))
+            except InterruptedError:
+                break
+            except KeyboardInterrupt:
+                break
+            except Exception as e:
+                for serial_idx, idx in batch_info:
+                    self.bypass_queue.put( SingleQuery(serial_idx, idx, None, e) )
+            
+
+
 
 class BaseAlgorithm:
     '''算法类的基类，派生类需要实现preprocess(self, x)、infer(self, batch)、postprocess(self, x)方法
@@ -237,9 +265,10 @@ class BaseAlgorithm:
             except EOFError:
                 break
 
-            thread_id, result = result_dict['id'], result_dict['result']
+            thread_id, result, exc = result_dict['id'], result_dict['result'], result_dict["exception"]
             with self._result_dict_lock:
                 self._result_dict[thread_id]['result'] = result
+                self._result_dict[thread_id]["exception"] = exc
                 self._result_dict[thread_id]['event'].set()
 
     def __getstate__(self):
@@ -290,6 +319,11 @@ class BaseAlgorithm:
         event.wait()
         with self._result_dict_lock:
             result = self._result_dict[thread_id]['result']
+            del self._result_dict[thread_id]['result']
+            exc = self._result_dict[thread_id]['exception']
+            del self._result_dict[thread_id]['exception']
+            if exc is not None:
+                raise exc
         return result
 
     def _preprocess(self, from_queue: mp.Queue, to_queue: mp.Queue):
@@ -297,9 +331,20 @@ class BaseAlgorithm:
         """
         self.init_preprocess()
         while True:
-            serial_idx, idx, data = from_queue.get()
-            data = self.preprocess(data)
-            to_queue.put((serial_idx, idx, data))
+            try:
+                query = from_queue.get()
+            except KeyboardInterrupt:
+                break
+            try:
+                query.data = self.preprocess(query.data)
+            except InterruptedError:
+                break
+            except KeyboardInterrupt:
+                break
+            except Exception as e:
+                query.exception = e
+                query.data = None
+            to_queue.put(query)
 
     def _infer(self, from_queue: mp.Queue, to_queue: mp.Queue):
         """将数据从from_queue中取出，推理后放入to_queue
@@ -308,27 +353,53 @@ class BaseAlgorithm:
         self.init_inference()
 
         batch_queue = queue.Queue(1)
-        builder = BatchBuilder(from_queue, batch_queue, self.batch_size, self.pack_batch)
-        t_batch = threading.Thread(target=builder.main, daemon=True)
+        builder = BatchBuilder(from_queue, batch_queue, to_queue, self.batch_size, self.pack_batch)
+        t_batch = threading.Thread(target = builder.main, daemon=True)
         t_batch.start()
         
         while True:
-            (batch_info, batch_data) = batch_queue.get()
-            builder.inference = True
-            batch_data = self.inference(batch_data)
-            builder.inference = False
-            for info, data in zip(batch_info, batch_data):
-                serial_idx, idx = info
-                to_queue.put((serial_idx, idx, data))
+            try:
+                (batch_info, batch_data) = batch_queue.get()
+            except KeyboardInterrupt:
+                break
+            try:
+                builder.inference = True
+                batch_data = self.inference(batch_data)
+                builder.inference = False
+            except InterruptedError:
+                break
+            except KeyboardInterrupt:
+                break
+            except Exception as e:
+                for serial_idx, idx in batch_info:
+                    to_queue.put(SingleQuery(serial_idx, idx, None, e))
+            else:
+                for info, data in zip(batch_info, batch_data):
+                    serial_idx, idx = info
+                    to_queue.put( SingleQuery(serial_idx, idx, data) )
 
     def _postprocess(self, from_queue: mp.Queue, to_queue: mp.Queue):
         """将数据从from_queue中取出，后处理后放入to_queue
         """
         self.init_postprocess()
         while True:
-            serial_idx, idx, data = from_queue.get()
-            data = self.postprocess(data)
-            to_queue.put((serial_idx, idx, data))
+            try:
+                query = from_queue.get()
+            except KeyboardInterrupt:
+                break
+            if query.exception is not None:
+                to_queue.put(query)
+                continue
+            try:
+                query.data = self.postprocess(query.data)
+            except KeyboardInterrupt:
+                break
+            except InterruptedError:
+                break
+            except Exception as e:
+                query.data = None
+                query.exception = e
+            to_queue.put(query)
     
     def pack_batch(self, batch):
         return batch
