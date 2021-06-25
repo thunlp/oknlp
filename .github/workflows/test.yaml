@@ -27,11 +27,12 @@ jobs:
     - uses: actions/cache@v2
       with:
         path: |
-          ~/.ink
-        key: ${{ runner.os }}-ink
+          ~/.oknlp
+        key: ${{ runner.os }}-oknlp
     - name: Run test script
       run: |
         python setup.py sdist bdist_wheel
+        pip install onnxruntime
         pip install ./dist/*.whl 
         cd tests
         python run_tests.py
