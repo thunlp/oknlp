@@ -1,9 +1,6 @@
 ChineseWordSegmentation
 ==============================
 
-.. autoclass:: oknlp.cws.BaseCWS
-    :members: __call__
-
 .. autoclass:: oknlp.cws.BertCWS
 
 .. autoclass:: oknlp.cws.THUlacCWS

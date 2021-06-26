@@ -6,7 +6,7 @@
 
 .. code-block:: sh
 
-
+    pip install oknlp
 
 2. git clone
 -----------------------------

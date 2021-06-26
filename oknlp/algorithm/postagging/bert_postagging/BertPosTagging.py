@@ -9,8 +9,22 @@ from ....auto_config import get_provider
 from ....data import load
 
 class BertPosTagging(BasePosTagging):
-    """使用Bert模型实现的PosTagging算法
-    """
+    '''使用Bert实现的PosTagging算法
+
+    支持传入的所有**kwargs参数:
+
+        str device: 'cpu' or 'cuda'
+
+        int batch_size
+
+        int num_preprocess
+        
+        int num_postprocess
+        
+        int max_queue_size
+        
+        str multiprocessing_context
+    '''
 
     def __init__(self, device=None, *args, **kwargs):
         provider, provider_op, fp16_mode, batch_size = get_provider(device)
