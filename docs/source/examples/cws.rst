@@ -1,12 +1,33 @@
+=============
 中文分词
 =============
+中文分词任务通常缩写为 **cws** (Chinese Word Segmentation)，它对应了OKNLP工具包的cws子模块。在OKNLP工具包中目前支持了两种不同的分词算法：
 
-.. code-block:: python
+* THULAC
+* BERT
 
-    import oknlp
+你可以使用 ``oknlp.cws.get_by_name`` 来创建它们。
+
+在这篇文档中，我们主要将介绍分词工具的基本用法。
 
 
-    cws = oknlp.cws.get_by_name(name="bert")
-    sents = ['我爱北京天安门'] # 输入为list[str]
-    result = cws(sents) # 输出为list
-    # [list[str]] result == [['我', '爱', '北京', '天安门']]
+示例代码
+=================
+
+>>> import oknlp
+>>> model = oknlp.cws.get_by_name("bert")
+>>> result = model([
+...   "我爱北京天安门",
+...   "天安门上太阳升"
+... ])
+>>> result
+[['我', '爱', '北京', '天安门'], ['天安门', '上', '太阳', '升']]
+
+
+输入 & 输出 说明
+====================
+
+中文分词的输入是一个完整的句子，而输出是一个词语的列表。
+
+在中文分词中，通常还会涉及到分词粒度这个概念，在目前的OKNLP工具包中，只提供了一种粒度的分词算法。更多不同粒度的分词方法将会在之后的版本中加入。
+

@@ -1,6 +1,4 @@
 PyYaml
-requests
-tqdm
 transformers>=4
 kara-storage
 py3nvml

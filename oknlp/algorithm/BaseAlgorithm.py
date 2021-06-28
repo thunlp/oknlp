@@ -117,20 +117,28 @@ class BatchBuilder:
             try:
                 query = self.from_queue.get()
                 while True:
-                    if query.exception is not None:
-                        self.bypass_queue.put(query)
+                    # append query
+                    if query is None:
+                        # query is None when queue is empty and model is infering
+                        pass
                     else:
-                        batch_info.append((query.serial_idx, query.idx))
-                        batch_data.append(query.data)
+                        if query.exception is not None:
+                            self.bypass_queue.put(query)
+                        else:
+                            batch_info.append((query.serial_idx, query.idx))
+                            batch_data.append(query.data)
+                    
                     if len(batch_data) >= self.batch_size:
                         # 1. == batch_size
                         break
+                    
                     try:
                         # try to get more
                         query = self.from_queue.get_nowait()
                     except Empty:
                         # 2. Queue is empty
                         if self.inference:
+                            query = None
                             continue
                         else:
                             break

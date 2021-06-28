@@ -1,41 +1,59 @@
+==================
 oknlp
 ==================
 
-Welcome to oknlp's documentation!
+
+topic-trees
+========================
 
 .. toctree::
-   :maxdepth: 1
-   :hidden:
-   :caption: Getting Started
+   首页 <self>
 
-   介绍 <introduction>
+.. toctree::
+   :caption: 开始
+
    安装 <installation>
    快速入门 <quickstart>
    更新日志 <changelog>
 
 .. toctree::
-   :maxdepth: 1
-   :hidden:
-   :caption: Examples
+   :caption: 示例代码
 
-   中文分词 <examples/cws.rst>
-   命名实体识别 <examples/ner.rst>
-   词性标注 <examples/postagging.rst>
-   细粒度实体分类 <examples/typing.rst>
-   自定义配置 <config>
+   中文分词 <examples/cws>
+   命名实体识别 <examples/ner>
+   词性标注 <examples/postagging>
+   细粒度实体分类 <examples/typing>
 
 .. toctree::
-   :maxdepth: 1
-   :hidden:
-   :caption: API Reference
+   :caption: API文档
 
-   cws <api/cws.rst>
-   ner <api/ner.rst>
-   postagging <api/postagging.rst>
-   typing <api/typing.rst>
-
-.. toctree::
-   :maxdepth: 1
-   :hidden:
+   cws <api/cws>
+   ner <api/ner>
+   postagging <api/postagging>
+   typing <api/typing>
+   config <api/config>
 
 
+project-slogans
+========================
+
+.. topic:: project slogan short
+    :class: project-slogan-short
+
+    OKNLP 👌
+
+.. topic:: project slogan long
+    :class: project-slogan-long
+
+    使用神经网络模型的开源的自然语言处理工具包。
+
+
+.. topic:: install link
+    :class: link-button
+
+    :doc:`安装<installation>`
+
+.. topic:: quickstart link
+    :class: link-button
+
+    :doc:`快速入门<quickstart>`

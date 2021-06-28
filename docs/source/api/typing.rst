@@ -1,8 +1,18 @@
-Typing
-======
+=====================
+细粒度实体分类
+=====================
+这篇文档主要介绍了细粒度实体分类算法的输入、输出以及各算法支持的参数配置。
 
-.. autoclass:: oknlp.typing.BertTyping
+细粒度实体分类接口
+=====================
+.. autoclass:: oknlp.typing.BaseTyping()
+    :members: __call__
 
-.. autofunction:: oknlp.typing.get_by_name
+细粒度实体分类实现
+=====================
 
-.. autofunction:: oknlp.typing.get_all
+BERT
+---------------------
+.. autoclass:: oknlp.typing.BertTyping()
+
+

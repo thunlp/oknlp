@@ -1,12 +1,31 @@
+========================
 命名实体识别
 ========================
+命名实体识别任务通常缩写为 **ner** (Named Entity Recognition)，它对应了OKNLP工具包的ner子模块。在OKNLP工具包中目前支持了基于 **BERT** 的算法，可以使用 ``oknlp.ner.get_by_name`` 来创建它。
 
-.. code-block:: python
+在这篇文档中，我们主要将介绍命名实体识别工具的基本用法。
 
-    import oknlp
+示例代码
+=======================
+
+>>> import oknlp
+>>> model = oknlp.ner.get_by_name("bert")
+>>> result = model([
+...   "我爱北京天安门",
+...   "天安门上太阳升"
+... ])
+>>> result
+[[{'type': 'LOC', 'begin': 2, 'end': 4}, {'type': 'LOC', 'begin': 4, 'end': 7}], [{'type': 'LOC', 'begin': 0, 'end': 3}, {'type': 'LOC', 'begin': 4, 'end': 6}]]
 
 
-    ner = oknlp.ner.get_by_name(name="bert")
-    sents = ['我爱北京天安门']  # 输入为list[str]
-    result = ner(sents) # 输出为list[dict]
-    # result == [[{'begin': 2, 'type': 'LOC', 'end': 3}, {'begin': 4, 'type': 'LOC', 'end': 6}]]
+输入 & 输出 说明
+=======================
+
+命名实体识别任务的输入是一个句子，输出是实体的列表。每个实体都用一个Python的字典来表示，它包含了以下三个字段：
+
+* **type:** 表示实体的类型，它通常有 `PER` 、 `ORG` 、 `LOC` 三种类型，分别表示“人”、“组织”和“地点”。
+* **begin:** 实体在原句中的起始位置，下标从0开始。
+* **end:** 实体在原句中的起始位置，下标从0开始。
+
+在这些字段中，实体的位置是用一个左闭右开的区间来表示的，即 :math:`[begin, end)` 。
+

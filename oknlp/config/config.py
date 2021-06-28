@@ -27,8 +27,11 @@ class Config:
         file_path = os.path.join(HOME, CONFIG_FILE)
         if os.path.exists(file_path):
             return
-        with open(file_path, "w") as file:
-            yaml.dump(DEFAULT_CONFIG, file)
+        try:
+            with open(file_path, "w") as file:
+                yaml.dump(DEFAULT_CONFIG, file)
+        except OSError:
+            pass
 
     def set_config_from_file(self, directory: str):
         file_path = os.path.join(directory, CONFIG_FILE)

@@ -1,0 +1,2 @@
+sphinx-mathjax-offline
+sphinx-thunlp-theme>=0.0.9

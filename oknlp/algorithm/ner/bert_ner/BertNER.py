@@ -11,22 +11,25 @@ from ....data import load
 labels = ['O'] + reduce(lambda x, y: x + y, [[f"{kd}-{l}" for kd in ('B', 'I', 'O')] for l in ('PER', 'LOC', 'ORG')])
 
 class BertNER(BaseNER):
-    '''使用Bert实现的NER算法
+    """基于BERT的命名实体识别算法
 
-    支持传入的所有**kwargs参数:
+    Args:
+        device (str): 运行模型设备的名称，例如："cuda:1"，"cpu"。
+        batch_size (int): 模型单次推理最大的batch size，默认会根据硬件资源自动设置。
+        num_preprocess (int): 预处理函数进程数，默认为一个自动设置的不超过4的值。
+        num_postprocess (int): 后处理函数进程数，默认为一个自动设置的不超过4的值。
+        max_queue_size (int): 最大调用队列长度，默认为1024.
+        multiprocessing_context: 多进程上下文，默认优先使用"fork"方式。
+    
+    :Name: bert
 
-        str device: 'cpu' or 'cuda'
+    **示例**
 
-        int batch_size
+    .. code-block:: python
 
-        int num_preprocess
-        
-        int num_postprocess
-        
-        int max_queue_size
-        
-        str multiprocessing_context
-    '''
+        oknlp.ner.get_by_name("bert", device="cuda")
+    """
+    
     def __init__(self, device=None, *args, **kwargs):
         provider, provider_op, fp16_mode, batch_size = get_provider(device)
         if not fp16_mode:
@@ -52,7 +55,7 @@ class BertNER(BaseNER):
 
     def postprocess(self, x, *args, **kwargs):
         sent, pred = x
-        return [{'type': j[0], 'begin': j[1], 'end': j[2]} for j in format_output(pred, labels)]
+        return [{'type': j[0], 'begin': j[1], 'end': j[2] + 1} for j in format_output(pred, labels)]
     
     def init_inference(self):
         sess_options = rt.SessionOptions()
