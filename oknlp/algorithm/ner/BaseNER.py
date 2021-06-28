@@ -3,25 +3,26 @@ from ..BaseAlgorithm import BaseAlgorithm
 
 
 class BaseNER(BaseAlgorithm):
-    """命名实体分类(NamedEntityRecognition)算法的基类，所有的NER算法需要继承该类并实现__call__(self, sents)函数
-
-    该基类本身并不实现任何算法，你可以通过调用该模块下的get_函数获取有具体实现的算法类
-    """
-    def __init__(self, device=None):
-        super().__init__(device)
-
-    def to(self, device: str):
-        return super().to(device)
-
     def __call__(self, sents: List[str]) -> List[List[Dict[str, Union[str, int]]]]:
         """
-        :param List[str] sents: 要进行命名实体分类的字符串列表
-        :return: List[List[Dict[str, Union[str, int]]]] 每句话的命名实体分类结果
-        :example:
+        Args:
+            sents: 输入的句子列表。
+        Returns:
+            返回一个和输入长度相同的列表，其中每一项对应其命名实体结果。
+
+            每个命名实体识别结果会包含多个实体，每个实体由一个包含三个字段的字典表示：
+
+            * type
+            * begin
+            * end
+
+        更多信息请参考 :doc:`命名实体识别 - 示例</examples/ner>`
+    
+        Examples:
             >>> import oknlp
             >>> ner = oknlp.ner.get_by_name()
-            >>> sents = ['我爱北京天安门']
-            >>> ner(sents)
-            [[{'type': 'LOC', 'begin': 2, 'end': 3}, {'type': 'LOC', 'begin': 4, 'end': 6}]]
+            >>> ner(['我爱北京天安门'])
+            [[{'type': 'LOC', 'begin': 2, 'end': 4}, {'type': 'LOC', 'begin': 4, 'end': 7}]]
+
         """
         return super().__call__(sents)

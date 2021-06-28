@@ -1,13 +1,22 @@
-ChineseWordSegmentation
+==============================
+中文分词子模块
 ==============================
 
-.. autoclass:: oknlp.cws.BaseCWS
+这篇文档主要介绍了中文分词的输入、输出以及各算法支持的参数配置。
+
+分词算法接口
+=============================
+
+.. autoclass:: oknlp.cws.BaseCWS()
     :members: __call__
 
-.. autoclass:: oknlp.cws.BertCWS
+分词算法实现
+=============================
 
-.. autoclass:: oknlp.cws.THUlacCWS
+BERT
+-----------------------------
+.. autoclass:: oknlp.cws.BertCWS()
 
-.. autofunction:: oknlp.cws.get_by_name
-
-.. autofunction:: oknlp.cws.get_all
+THULAC
+-----------------------------
+.. autoclass:: oknlp.cws.THUlacCWS()

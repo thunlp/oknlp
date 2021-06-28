@@ -1,6 +1,0 @@
-name: test
-version: 1
-path: "test.zip"
-files:
-  - "test.txt"
-description: 测试样例

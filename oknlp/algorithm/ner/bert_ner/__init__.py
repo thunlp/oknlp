@@ -1,1 +1,1 @@
-from .BertNER import BertNER
+from .BertNER import BertNER 

@@ -1,11 +1,16 @@
-NamedEntityRecognition
 =======================
+命名实体识别
+=======================
+这篇文档主要介绍了命名实体识别算法的输入、输出以及各算法支持的参数配置。
 
-.. autoclass:: oknlp.ner.BaseNER
+命名实体识别接口
+=======================
+.. autoclass:: oknlp.ner.BaseNER()
     :members: __call__
 
-.. autoclass:: oknlp.ner.BertNER
+命名实体识别实现
+=======================
 
-.. autofunction:: oknlp.ner.get_by_name
-
-.. autofunction:: oknlp.ner.get_all
+BERT
+-----------------------
+.. autoclass:: oknlp.ner.BertNER()

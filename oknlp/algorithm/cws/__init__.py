@@ -1,8 +1,7 @@
 from typing import List
 from .BaseCWS import BaseCWS
-from .bert_cws import BertCWS
 from .thulac_cws import THUlacCWS
-
+from .bert_cws import BertCWS
 
 def get_by_name(name: str = "", **kwargs) -> BaseCWS:
     """根据条件获取一个CWS类的实例，无法根据条件获取时返回BertCWS()

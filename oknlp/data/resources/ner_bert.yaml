@@ -1,6 +1,0 @@
-name: ner_bert
-version: 1
-path: "ner_bert.zip"
-files:
-  - "ner_bert.ckpt"
-description: NER模型

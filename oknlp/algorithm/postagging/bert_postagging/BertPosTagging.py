@@ -1,62 +1,95 @@
 import os
-import torch
-import torch.utils.data as Data
-from transformers import BertTokenizer
-from ....utils.process_io import split_text_list, merge_result
-from ....nn.models import BertLinear
-from ....data import load
-from ...BaseAlgorithm import BaseAlgorithm
-from .dataset import Dataset
+from transformers import BertTokenizerFast
 from .class_list import classlist
-from .apply_text_norm import process_sent
-from .evaluate_funcs import format_output
+from ....utils.format_output import format_output
+import numpy as np
+import onnxruntime as rt
+from ..BasePosTagging import BasePosTagging
+from ....auto_config import get_provider
+from ....data import load
 
+class BertPosTagging(BasePosTagging):
+    """基于BERT的词性标注算法
 
-class BertPosTagging(BaseAlgorithm):
-    """使用Bert模型实现的PosTagging算法
+    Args:
+        device (str): 运行模型设备的名称，例如："cuda:1"，"cpu"。
+        batch_size (int): 模型单次推理最大的batch size，默认会根据硬件资源自动设置。
+        num_preprocess (int): 预处理函数进程数，默认为一个自动设置的不超过4的值。
+        num_postprocess (int): 后处理函数进程数，默认为一个自动设置的不超过4的值。
+        max_queue_size (int): 最大调用队列长度，默认为1024.
+        multiprocessing_context: 多进程上下文，默认优先使用"fork"方式。
+    
+    :Name: bert
+
+    **示例**
+
+    .. code-block:: python
+
+        oknlp.postagging.get_by_name("bert", device="cuda:0")
     """
-    def __init__(self, device=None):
-        pos_path = load('pos_bert')
-        self.model = BertLinear(classlist)
-        checkpoint = torch.load(os.path.join(pos_path, "params.ckpt"), map_location=lambda storage, loc: storage)
-        self.model.load_state_dict(checkpoint)
-        self.model.eval()
-        self.tokenizer = BertTokenizer.from_pretrained("bert-base-chinese")
-        super().__init__(device)
 
-    def to(self, device):
-        self.model = self.model.to(device)
-        return super().to(device)
+    def __init__(self, device=None, *args, **kwargs):
+        provider, provider_op, fp16_mode, batch_size = get_provider(device)
+        if not fp16_mode:
+            model_path = load('postagging.bert','fp32')
+        else:
+            model_path = load('postagging.bert','fp16')
+        self.config = {
+            "model_path": model_path,
+            "provider": provider,
+            "provider_option": provider_op,
+        }
+        if "batch_size" not in kwargs:
+            kwargs["batch_size"] = batch_size
+        super().__init__(*args,**kwargs)
 
-    def __call__(self, sents):
-        sents, is_end_list = split_text_list(sents, 126)
-        processed_sents = [process_sent(' '.join(sent)).split(' ') for sent in sents]
-        examples = [[sent, [0 for i in range(len(sent))]] for sent in processed_sents]
-        dataset = Dataset(examples, self.tokenizer)
-        formatted_output = self.infer_epoch(Data.DataLoader(dataset, batch_size=8, num_workers=0))
-        results = self.process_output(sents, formatted_output)
-        return merge_result(results, is_end_list)
 
-    def infer_epoch(self, infer_loader):
-        pred, mask = [], []
-        for batch in infer_loader:
-            p, m = self.infer_step(batch)
-            pred += p
-            mask += m
-        return format_output(pred, mask, classlist, dims=2)
+    def init_preprocess(self):
+        self.tokenizer = BertTokenizerFast.from_pretrained("bert-base-chinese")
 
-    def infer_step(self, batch):
-        x, at, y = batch
-        x, at, y = x.to(self.device), at.to(self.device), y.to(self.device)
-        with torch.no_grad():
-            p = self.model(x, at)
-            return p.cpu().tolist(), (y != -1).long().cpu().tolist()
+    def preprocess(self, x, *args, **kwargs):
+        tokens = self.tokenizer.tokenize(x)
+        sx = self.tokenizer.convert_tokens_to_ids(['[CLS]'] + tokens + ['[SEP]']) 
+        return x, sx
 
-    def process_output(self, sents, formatted_output):
-        results = []
-        for sent, [_, pos_tagging] in zip(sents, formatted_output):
-            result = []
-            for ((begin, end), tag) in pos_tagging:
-                result.append((sent[begin:end], tag))
-            results.append(result)
-        return results
+    def postprocess(self, x, *args, **kwargs):
+        result = []
+        sent, pred = x
+        for tag, begin, end in format_output(pred, classlist):
+            result.append((sent[begin:end + 1], tag))
+        return result
+
+    def init_inference(self):
+        sess_options = rt.SessionOptions()
+        sess_options.graph_optimization_level = rt.GraphOptimizationLevel.ORT_ENABLE_ALL
+        if hasattr(os, "sched_getaffinity") and len(os.sched_getaffinity(0)) < os.cpu_count():
+            sess_options.intra_op_num_threads = 1
+            sess_options.inter_op_num_threads = 1
+        self.sess = rt.InferenceSession(os.path.join(self.config['model_path'],'model.onnx'),sess_options, providers=self.config['provider'], 
+        provider_options=self.config["provider_option"])
+        self.input_name = self.sess.get_inputs()[0].name
+        self.att_name = self.sess.get_inputs()[1].name 
+        self.label_name = self.sess.get_outputs()[0].name
+    
+    def pack_batch(self, batch):
+        max_len = max([len(tokens) for _, tokens in batch])
+        input_array = np.zeros((len(batch), max_len), dtype=np.int32)
+        att_array = np.zeros((len(batch), max_len), dtype=np.int32)
+
+        new_batch = []
+        for i, (sent, tokens) in enumerate(batch):
+            input_array[i, :len(tokens)] = tokens
+            att_array[i, :len(tokens)] = 1
+            
+            new_batch.append((sent, len(tokens)))
+        input_feed = {self.input_name: input_array, self.att_name: att_array}
+        return new_batch, input_feed
+
+    def inference(self, batch):
+        new_batch, input_feed = batch
+
+        pred_onx = self.sess.run([self.label_name], input_feed)[0]
+
+        return [
+            (sent, pred[:length]) for pred, (sent, length) in zip(pred_onx, new_batch)
+        ]
