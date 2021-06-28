@@ -11,6 +11,22 @@ from ....data import load
 labels = ['O'] + reduce(lambda x, y: x + y, [[f"{kd}-{l}" for kd in ('B', 'I', 'O')] for l in ('PER', 'LOC', 'ORG')])
 
 class BertNER(BaseNER):
+    '''使用Bert实现的NER算法
+
+    支持传入的所有**kwargs参数:
+
+        str device: 'cpu' or 'cuda'
+
+        int batch_size
+
+        int num_preprocess
+        
+        int num_postprocess
+        
+        int max_queue_size
+        
+        str multiprocessing_context
+    '''
     def __init__(self, device=None, *args, **kwargs):
         provider, provider_op, fp16_mode, batch_size = get_provider(device)
         if not fp16_mode:
