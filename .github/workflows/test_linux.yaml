@@ -34,9 +34,11 @@ jobs:
         python setup.py build_ext --inplace
         pip install onnxruntime
         pip install -r requirements.txt
+        pip install coverage
         coverage run -m unittest discover tests "test_*.py"
         coverage combine
     - name: "Upload coverage to Codecov"
       uses: codecov/codecov-action@v1
       with:
+        flags: ${{ matrix.python }}
         fail_ci_if_error: true
