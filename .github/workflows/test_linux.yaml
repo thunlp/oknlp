@@ -31,9 +31,12 @@ jobs:
         key: oknlp
     - name: Run test script
       run: |
-        python setup.py sdist bdist_wheel
+        python setup.py build_ext --inplace
         pip install onnxruntime
-        pip install ./dist/*.whl 
-        cd tests
-        python run_tests.py
-
+        pip install -r requirements.txt
+        coverage run -m unittest discover tests "test_*.py"
+        coverage combine
+    - name: "Upload coverage to Codecov"
+      uses: codecov/codecov-action@v1
+      with:
+        fail_ci_if_error: true
