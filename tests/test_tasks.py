@@ -11,6 +11,7 @@ class TestTasks(unittest.TestCase):
             for sent, result in zip(sents, results):
                 sent_r = ''.join([sent[word['begin']:word['end'] + 1] for word in result])
                 self.assertEqual(sent, sent_r)
+            ner.close()
 
     def test_cws(self):
         sents = ["清华大学自然语言处理与社会人文计算实验室"]
@@ -20,6 +21,7 @@ class TestTasks(unittest.TestCase):
             for sent, result in zip(sents, results):
                 sent_r = ''.join(result)
                 self.assertEqual(sent, sent_r)
+            cws.close()
 
     def test_pos_tagging(self):
         sents = ["清华大学自然语言处理与社会人文计算实验室"]
@@ -29,6 +31,7 @@ class TestTasks(unittest.TestCase):
             for sent, result in zip(sents, results):
                 sent_r = ''.join([word for (word, tag) in result])
                 self.assertEqual(sent, sent_r)
+            pos_tagging.close()
 
     def test_typing(self):
         sents = [("3月15日,北方多地正遭遇近10年来强度最大、影响范围最广的沙尘暴。", (30, 33)),
@@ -41,3 +44,4 @@ class TestTasks(unittest.TestCase):
                     (entity, score) = entity_score
                     self.assertIsInstance(entity, str)
                     self.assertIsInstance(score, float)
+            typing.close()

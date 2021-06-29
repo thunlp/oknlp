@@ -4,7 +4,7 @@ import queue
 from queue import Empty
 import threading
 import sys
-import time
+import time, signal
 import warnings
 
 class SingleQuery:
@@ -14,6 +14,9 @@ class SingleQuery:
         self.data = data
         self.exception = exception
 
+def handle_sigterm(self, *args):
+    sys.exit(0)
+    
 class AlgorithmServer:
     def __init__(self, q_input: mp.Queue, q_output: mp.Queue, address=None, family=None) -> None:
         self.listener = Listener(address=address, family=family)
@@ -95,6 +98,8 @@ class AlgorithmServer:
         self.t_listener.start()
         self.t_scatter.start()
         self.t_gather.start()
+
+        signal.signal(signal.SIGTERM, handle_sigterm)
 
         self.t_listener.join()
 
@@ -272,6 +277,9 @@ class BaseAlgorithm:
                 result_dict = self.client.recv()
             except EOFError:
                 break
+            except OSError:
+                # Server stoped
+                break
 
             thread_id, result, exc = result_dict['id'], result_dict['result'], result_dict["exception"]
             with self._result_dict_lock:
@@ -299,13 +307,12 @@ class BaseAlgorithm:
     def close(self):
         if self.__closed:
             return
-        for p in self.p_preprocess:
-            p.terminate()
-        self.p_infer.terminate()
-        for p in self.p_postprocess:
-            p.terminate()
-        self.p_listener.terminate()
-        self.client.close()
+        if hasattr(self, "p_preprocess"):
+            for p in self.p_preprocess + self.p_postprocess + [self.p_infer, self.p_listener]:
+                p.terminate()
+            
+        if hasattr(self, 'client'):
+            self.client.close()
         self.__closed = True
 
     def __call__(self, sents):
@@ -337,6 +344,7 @@ class BaseAlgorithm:
     def _preprocess(self, from_queue: mp.Queue, to_queue: mp.Queue):
         """将数据从from_queue中取出，预处理后放入to_queue
         """
+        signal.signal(signal.SIGTERM, handle_sigterm)
         self.init_preprocess()
         while True:
             try:
@@ -357,7 +365,7 @@ class BaseAlgorithm:
     def _infer(self, from_queue: mp.Queue, to_queue: mp.Queue):
         """将数据从from_queue中取出，推理后放入to_queue
         """
-        
+        signal.signal(signal.SIGTERM, handle_sigterm)
         self.init_inference()
 
         batch_queue = queue.Queue(1)
@@ -389,6 +397,7 @@ class BaseAlgorithm:
     def _postprocess(self, from_queue: mp.Queue, to_queue: mp.Queue):
         """将数据从from_queue中取出，后处理后放入to_queue
         """
+        signal.signal(signal.SIGTERM, handle_sigterm)
         self.init_postprocess()
         while True:
             try:

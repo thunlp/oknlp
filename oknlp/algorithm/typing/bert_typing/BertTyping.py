@@ -33,7 +33,8 @@ class BertTyping(BaseTyping):
             model_path = load('typing.bert','fp32')
         else:
             model_path = load('typing.bert','fp16')
-        types = json.loads(open(os.path.join(model_path, 'types.json'), 'r').read())
+        with open(os.path.join(model_path, 'types.json'), "r", encoding="utf-8") as f_label:
+            types = json.loads(f_label.read())
         self.config = {
             "inited": False,
             "model_path": model_path,

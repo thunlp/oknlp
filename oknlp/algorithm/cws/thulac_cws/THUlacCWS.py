@@ -19,6 +19,7 @@ class THUlacCWS:
     def __init__(self):
         model_path = load("cws.lac", 'fp32')
         self.model = THUlac(model_path)
+        self.__closed = False
 
     def __call__(self, sents):
         result = [self.model.cut(sent) for sent in sents]
@@ -28,3 +29,9 @@ class THUlacCWS:
                 sep = sep[:-1]
             results.append(sep)
         return results
+
+    def close(self):
+        if self.__closed:
+            return
+        self.__closed = True
+        del self.model

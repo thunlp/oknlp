@@ -30,7 +30,8 @@ class TestExceptions(unittest.TestCase):
             alg([4, 5])
         with self.assertRaises(MyException2):
             alg([6, 7])
-        del alg
+        alg.close()
+
 
         
     

@@ -21,7 +21,7 @@ class Caller:
     def work(self, x):
         return self.model([x])[0]
 
-class TestExceptions(unittest.TestCase):
+class TestThreads(unittest.TestCase):
     
     def test_exception(self):
         alg = MyAlgorithm(batch_size=16)
@@ -31,6 +31,7 @@ class TestExceptions(unittest.TestCase):
             result = pool.map(caller.work, range(2**10))
         for i, x in enumerate(result):
             self.assertEqual(i + 2, x)
+        alg.close()
         
         
     
