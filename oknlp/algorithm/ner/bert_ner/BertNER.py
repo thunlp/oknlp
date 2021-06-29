@@ -40,13 +40,14 @@ class BertNER(BaseNER):
             "model_path": model_path,
             "provider": provider,
             "provider_option": provider_op,
+            "tokenizer": BertTokenizerFast.from_pretrained("bert-base-chinese"),
         }
         if "batch_size" not in kwargs:
             kwargs["batch_size"] = batch_size
         super().__init__(*args,**kwargs)
     
     def init_preprocess(self):
-        self.tokenizer =  BertTokenizerFast.from_pretrained("bert-base-chinese")
+        self.tokenizer =  self.config["tokenizer"]
 
     def preprocess(self, x, *args, **kwargs):
         tokens = self.tokenizer.tokenize(x)

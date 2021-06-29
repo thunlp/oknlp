@@ -35,20 +35,24 @@ class BertTyping(BaseTyping):
             model_path = load('typing.bert','fp16')
         with open(os.path.join(model_path, 'types.json'), "r", encoding="utf-8") as f_label:
             types = json.loads(f_label.read())
+
+        tokenizer = BertTokenizerFast.from_pretrained("bert-base-multilingual-cased")
+        tokenizer.add_special_tokens({'additional_special_tokens':["<ent>","</ent>"]})
+
         self.config = {
             "inited": False,
             "model_path": model_path,
             "provider": provider,
             "provider_option": provider_op,
             'types': types,
+            "tokenizer": tokenizer,
         }
         if "batch_size" not in kwargs:
             kwargs["batch_size"] = batch_size
         super().__init__(*args, **kwargs)
        
     def init_preprocess(self):
-        self.tokenizer = BertTokenizerFast.from_pretrained("bert-base-multilingual-cased")
-        self.tokenizer.add_special_tokens({'additional_special_tokens':["<ent>","</ent>"]})
+        self.tokenizer = self.config["tokenizer"]
 
     def preprocess(self, x, *args, **kwargs):
         text, span = x

@@ -4,8 +4,8 @@ if __name__ == "__main__":
     # 分词
     print("====== 分词 =======")
     sents = ["我爱北京天安门"]
-    model = oknlp.cws.get_by_name("thulac")
-    print("thulac:", model(sents))
+    #model = oknlp.cws.get_by_name("thulac")
+    #print("thulac:", model(sents))
     model = oknlp.cws.get_by_name("bert")
     print("bert:", model(sents))
     print("\n\n")
