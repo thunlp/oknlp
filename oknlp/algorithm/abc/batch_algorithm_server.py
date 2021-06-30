@@ -262,10 +262,6 @@ class BatchAlgorithmServer:
         all_sub_processes = [self.p_infer, self.p_listener] + self.p_preprocess + self.p_postprocess
         for process in all_sub_processes:
             process.terminate()
-        for process in all_sub_processes:
-            if process.is_alive():
-                process.join(1)
-                process.kill()
         self.__closed = True
         
 
