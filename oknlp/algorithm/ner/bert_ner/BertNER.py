@@ -4,13 +4,13 @@ from ....utils.format_output import format_output
 import numpy as np
 from transformers import BertTokenizerFast
 import onnxruntime as rt
-from ..BaseNER import BaseNER
+from ...abc import BatchAlgorithm
 from ....auto_config import get_provider
 from ....data import load
 
 labels = ['O'] + reduce(lambda x, y: x + y, [[f"{kd}-{l}" for kd in ('B', 'I', 'O')] for l in ('PER', 'LOC', 'ORG')])
 
-class BertNER(BaseNER):
+class BertNER(BatchAlgorithm):
     """基于BERT的命名实体识别算法
 
     Args:
@@ -40,13 +40,14 @@ class BertNER(BaseNER):
             "model_path": model_path,
             "provider": provider,
             "provider_option": provider_op,
+            "tokenizer": BertTokenizerFast.from_pretrained("bert-base-chinese"),
         }
         if "batch_size" not in kwargs:
             kwargs["batch_size"] = batch_size
         super().__init__(*args,**kwargs)
     
     def init_preprocess(self):
-        self.tokenizer =  BertTokenizerFast.from_pretrained("bert-base-chinese")
+        self.tokenizer =  self.config["tokenizer"]
 
     def preprocess(self, x, *args, **kwargs):
         tokens = self.tokenizer.tokenize(x)
@@ -54,8 +55,7 @@ class BertNER(BaseNER):
         return x, sx
 
     def postprocess(self, x, *args, **kwargs):
-        sent, pred = x
-        return [{'type': j[0], 'begin': j[1], 'end': j[2] + 1} for j in format_output(pred, labels)]
+        return [{'type': j[0], 'begin': j[1], 'end': j[2] + 1} for j in format_output(x, labels)]
     
     def init_inference(self):
         sess_options = rt.SessionOptions()
@@ -89,6 +89,6 @@ class BertNER(BaseNER):
         new_batch, input_feed = batch
         pred_onx = self.sess.run([self.label_name],input_feed)[0]
         return [
-            (sent, pred[:length])
-            for pred, (sent, length) in zip(pred_onx, new_batch)
+            pred[:length]
+            for pred, (_, length) in zip(pred_onx, new_batch)
         ]

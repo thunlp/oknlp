@@ -45,7 +45,7 @@ project-slogans
 .. topic:: project slogan long
     :class: project-slogan-long
 
-    使用神经网络模型的开源的自然语言处理工具包。
+    一个开源的中文文法分析工具包。
 
 
 .. topic:: install link

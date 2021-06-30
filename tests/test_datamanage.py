@@ -28,7 +28,8 @@ class TestDataManager(unittest.TestCase):
 
         config.path = os.path.join(DATA_DIR, "path1")
         v = load("test", "")
-        self.assertEqual(open(os.path.join(v, "test.txt"), "r").read(), "test")
+        with open(os.path.join(v, "test.txt"), "r") as f:
+            self.assertEqual(f.read(), "test")
         self.assertTrue(not os.path.exists(os.path.join(DATA_DIR, "sources", "test")) )
 
         config.path = old

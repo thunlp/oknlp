@@ -1,8 +1,8 @@
 from typing import List, Dict, Union
-from ..BaseAlgorithm import BaseAlgorithm
+from ..abc import Algorithm
 
 
-class BaseNER(BaseAlgorithm):
+class BaseNER(Algorithm):
     def __call__(self, sents: List[str]) -> List[List[Dict[str, Union[str, int]]]]:
         """
         Args:

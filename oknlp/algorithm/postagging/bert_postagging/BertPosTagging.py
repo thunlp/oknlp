@@ -4,11 +4,11 @@ from .class_list import classlist
 from ....utils.format_output import format_output
 import numpy as np
 import onnxruntime as rt
-from ..BasePosTagging import BasePosTagging
+from ...abc import BatchAlgorithm
 from ....auto_config import get_provider
 from ....data import load
 
-class BertPosTagging(BasePosTagging):
+class BertPosTagging(BatchAlgorithm):
     """基于BERT的词性标注算法
 
     Args:
@@ -38,6 +38,7 @@ class BertPosTagging(BasePosTagging):
             "model_path": model_path,
             "provider": provider,
             "provider_option": provider_op,
+            "tokenizer": BertTokenizerFast.from_pretrained("bert-base-chinese"),
         }
         if "batch_size" not in kwargs:
             kwargs["batch_size"] = batch_size
@@ -45,7 +46,7 @@ class BertPosTagging(BasePosTagging):
 
 
     def init_preprocess(self):
-        self.tokenizer = BertTokenizerFast.from_pretrained("bert-base-chinese")
+        self.tokenizer = self.config["tokenizer"]
 
     def preprocess(self, x, *args, **kwargs):
         tokens = self.tokenizer.tokenize(x)

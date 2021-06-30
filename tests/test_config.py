@@ -26,7 +26,8 @@ class TestConfig(unittest.TestCase):
     def test_load_config(self):
         from oknlp.config.config import Config, DEFAULT_CONFIG
         
-        open( os.path.join(HOME, ".oknlp.config.yaml"), "w" ).write(TESTYAML1)
+        with open( os.path.join(HOME, ".oknlp.config.yaml"), "w", encoding="utf-8") as f:
+            f.write(TESTYAML1)
         cfg = Config()
         self.assertListEqual(cfg.path, [ DATA_DIR, "abcde" ])
         self.assertEqual( cfg.source, DEFAULT_CONFIG["source"])
@@ -39,8 +40,10 @@ class TestConfig(unittest.TestCase):
     
     def test_config_overwrite(self):
         from oknlp.config.config import Config, DEFAULT_CONFIG
-        open( os.path.join(HOME, ".oknlp.config.yaml"), "w" ).write(TESTYAML1)
-        open( os.path.abspath(".oknlp.config.yaml"), "w" ).write(TESTYAML2)
+        with open( os.path.join(HOME, ".oknlp.config.yaml"), "w", encoding="utf-8") as f:
+            f.write(TESTYAML1)
+        with open( os.path.abspath(".oknlp.config.yaml"), "w", encoding="utf-8") as f:
+            f.write(TESTYAML2)
         cfg = Config()
 
         self.assertListEqual( cfg.path, ["abcde"] )

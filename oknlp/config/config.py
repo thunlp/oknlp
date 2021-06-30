@@ -28,7 +28,7 @@ class Config:
         if os.path.exists(file_path):
             return
         try:
-            with open(file_path, "w") as file:
+            with open(file_path, "w", encoding="utf-8") as file:
                 yaml.dump(DEFAULT_CONFIG, file)
         except OSError:
             pass
@@ -37,7 +37,7 @@ class Config:
         file_path = os.path.join(directory, CONFIG_FILE)
         config_data = {}
         try:
-            with open(file_path, "r") as file:
+            with open(file_path, "r", encoding="utf-8") as file:
                 config_data = yaml.load(file, Loader=yaml.FullLoader)
         except OSError:
             pass

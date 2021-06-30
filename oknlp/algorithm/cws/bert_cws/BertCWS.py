@@ -1,15 +1,15 @@
 import os
 from functools import reduce
 from ....utils.format_output import format_output
-from transformers import BertTokenizerFast
 import numpy as np
 import onnxruntime as rt
-from ..BaseCWS import BaseCWS
+from ...abc import BatchAlgorithm
 from ....auto_config import get_provider
 from ....data import load
+from transformers import BertTokenizerFast
 
 labels = reduce(lambda x, y: x+y, [[f"{kd}-{l}" for kd in ('B','I','O')] for l in ('SEG',)])
-class BertCWS(BaseCWS):
+class BertCWS(BatchAlgorithm):
     """基于BERT的分词算法
 
     Args:
@@ -40,13 +40,14 @@ class BertCWS(BaseCWS):
             "model_path": model_path,
             "provider": provider,
             "provider_option": provider_op,
+            "tokenizer": BertTokenizerFast.from_pretrained("bert-base-chinese"),
         }
         if "batch_size" not in kwargs:
             kwargs["batch_size"] = batch_size
         super().__init__(*args, **kwargs)
 
     def init_preprocess(self):
-        self.tokenizer = BertTokenizerFast.from_pretrained("bert-base-chinese")
+        self.tokenizer = self.config["tokenizer"]
 
     def preprocess(self, x, *args, **kwargs):
         tokens = self.tokenizer.tokenize(x)
