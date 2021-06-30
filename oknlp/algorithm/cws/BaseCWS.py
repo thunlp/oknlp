@@ -1,8 +1,8 @@
 from typing import List
-from ..BaseAlgorithm import BaseAlgorithm
+from ..abc import Algorithm
 
 
-class BaseCWS(BaseAlgorithm):
+class BaseCWS(Algorithm):
 
     def __call__(self, sents: List[str]) -> List[List[str]]:
         """

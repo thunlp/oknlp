@@ -1,11 +1,12 @@
-import multiprocessing as mp
-from multiprocessing.connection import Client, Listener, wait
-import queue
 from queue import Empty
+import logging
+import multiprocessing as mp
+from multiprocessing.connection import Listener, wait
 import threading
-import sys
-import time, signal
-import warnings
+import queue
+import sys, signal
+
+logger = logging.getLogger("oknlp")
 
 class SingleQuery:
     def __init__(self, serial_idx, idx, data, exception=None):
@@ -14,11 +15,14 @@ class SingleQuery:
         self.data = data
         self.exception = exception
 
-def handle_sigterm(self, *args):
-    sys.exit(0)
+def handle_sigterm(text):
+    def wrapper(*args):
+        logger.info("SIGTERM: %s", text)
+        sys.exit(0)
+    return wrapper
     
-class AlgorithmServer:
-    def __init__(self, q_input: mp.Queue, q_output: mp.Queue, address=None, family=None) -> None:
+class AlgorithmListener:
+    def __init__(self, q_input: mp.Queue, q_output: mp.Queue, server_stop_event, address=None, family=None) -> None:
         self.listener = Listener(address=address, family=family)
         self.conn_list = []
         self.q_input = q_input
@@ -28,10 +32,12 @@ class AlgorithmServer:
         self.request_map = {}
         self.req_lock = threading.Lock()
         self.first_client_init = threading.Event()
+        self.server_stop_event = server_stop_event
 
     def _thread_listener(self):
         while True:
             conn = self.listener.accept()
+            logger.info("Client connected")
             conn.send({
                 "op": 0,
                 "msg": "hello"
@@ -42,17 +48,22 @@ class AlgorithmServer:
                 self.conn_list.append(conn)
 
     def _thread_scatter(self):
+        self.first_client_init.wait()
         while True:
             with self.server_lock:
                 self.conn_list = list(filter(lambda x: not x.closed, self.conn_list))
                 if len(self.conn_list) == 0:
-                    self.first_client_init.clear()
-            self.first_client_init.wait()
+                    # all clients disconnected
+                    self.server_stop_event.set()
+                    break
 
             for conn in wait(self.conn_list, 1):
                 try:
                     request = conn.recv()
                 except EOFError:
+                    if not conn.closed:
+                        conn.close()
+                    logger.info("Client disconnected")
                     continue
                 if request["op"] == 1:
                     with self.req_lock:
@@ -99,7 +110,8 @@ class AlgorithmServer:
         self.t_scatter.start()
         self.t_gather.start()
 
-        signal.signal(signal.SIGTERM, handle_sigterm)
+    def join(self):
+        signal.signal(signal.SIGTERM, handle_sigterm("exit algorithm listener"))
 
         self.t_listener.join()
 
@@ -113,8 +125,6 @@ class BatchBuilder:
         self.batch_size = batch_size
     
     def main(self):
-        """一个线程负责组装batch
-        """
         while True:
             batch_info = []
             batch_data = []
@@ -160,29 +170,22 @@ class BatchBuilder:
             except Exception as e:
                 for serial_idx, idx in batch_info:
                     self.bypass_queue.put( SingleQuery(serial_idx, idx, None, e) )
-            
 
 
-
-class BaseAlgorithm:
-    '''算法类的基类，派生类需要实现preprocess(self, x)、infer(self, batch)、postprocess(self, x)方法
-    '''
-    def __init__(self, batch_size=1, num_preprocess=None, num_postprocess=None, max_queue_size=1024, multiprocessing_context = None):
+class BatchAlgorithmServer:
+    def __init__(self, algorithm,  batch_size, num_preprocess, num_postprocess, max_queue_size, multiprocessing_context) -> None:
         if num_preprocess is None:
             num_preprocess = min(mp.cpu_count(), 4)
         if num_postprocess is None:
             num_postprocess = min(mp.cpu_count(), 4)
-        self.batch_size = batch_size
-
         if multiprocessing_context is None and "fork" in mp.get_all_start_methods():
             multiprocessing_context = "fork"
+        self.algorithm = algorithm
         multiprocessing = mp.get_context(multiprocessing_context)
-
-        self.raw_queue = multiprocessing.Queue(max_queue_size)  # raw
-        self.pre_queue = multiprocessing.Queue(max_queue_size)  # after preprocess
-        self.infer_queue = multiprocessing.Queue(max_queue_size)  # after infer
-        self.post_queue = multiprocessing.Queue(max_queue_size)  # after postprocess
-
+        raw_queue = multiprocessing.Queue(max_queue_size)  # raw
+        pre_queue = multiprocessing.Queue(max_queue_size)  # after preprocess
+        infer_queue = multiprocessing.Queue(max_queue_size)  # after infer
+        post_queue = multiprocessing.Queue(max_queue_size)  # after postprocess
         if sys.platform == "win32":
             # using named pipe
             import random
@@ -194,34 +197,37 @@ class BaseAlgorithm:
             import tempfile
             self.__address = tempfile.mktemp()
             self.__family = "AF_UNIX"
+        
         __evt_server_start = mp.Event()
+        __evt_server_stop = mp.Event()
+
         p_preprocess = [
             multiprocessing.Process (
-                name = "%s-preprocess-%d" % (self.__class__.__name__, i),
+                name = "%s-preprocess-%d" % (algorithm.__class__.__name__, i),
                 target = self._preprocess, 
-                args = (self.raw_queue, self.pre_queue), 
+                args = (raw_queue, pre_queue),
                 daemon = True
             ) for i in range(num_preprocess)
         ]
         p_infer = multiprocessing.Process (
-            name = "%s-inference" % self.__class__.__name__,
+            name = "%s-inference" % algorithm.__class__.__name__,
             target = self._infer, 
-            args = (self.pre_queue, self.infer_queue), 
-            daemon=True
+            args = (pre_queue, infer_queue, batch_size),
+            daemon = True
         )
         p_postprocess = [
             multiprocessing.Process (
-                name = "%s-postprocess-%d" % (self.__class__.__name__, i),
+                name = "%s-postprocess-%d" % (algorithm.__class__.__name__, i),
                 target = self._postprocess, 
-                args = (self.infer_queue, self.post_queue), 
-                daemon=True
+                args = (infer_queue, post_queue),
+                daemon = True
             ) for i in range(num_postprocess)
         ]
         p_listener = multiprocessing.Process (
-            name = "%s-server" % self.__class__.__name__,
+            name = "%s-server" % algorithm.__class__.__name__,
             target = self._listener, 
-            args = (self.raw_queue, self.post_queue, self.__address, self.__family, __evt_server_start), 
-            daemon=True
+            args = (raw_queue, post_queue, __evt_server_stop, self.__address, self.__family, __evt_server_start), 
+            daemon = True
         )
 
         for p in p_preprocess:
@@ -231,128 +237,56 @@ class BaseAlgorithm:
             p.start()
         p_listener.start()
 
+        p_wait = threading.Thread(name="%s-wait-stop" % algorithm.__class__.__name__, target=self._wait_stop_thread, args=(__evt_server_stop,), daemon=True)
+        p_wait.start()
+
         # wait until listener started
         __evt_server_start.wait()
+        logger.info("Algorithm server %s started", algorithm.__class__.__name__)
 
         self.p_preprocess = p_preprocess
         self.p_infer = p_infer
         self.p_postprocess = p_postprocess
         self.p_listener = p_listener
-
-        self._reinit_client()
-
-    def _listener(self, q_input: mp.Queue, q_output: mp.Queue, address, family, __evt_server_start):
-        server = AlgorithmServer(q_input, q_output, address, family)
-        __evt_server_start.set()
-        server.start()
-
-    def _reinit_client(self):
         self.__closed = False
-        self._result_dict = {}
-        self._result_dict_lock = threading.Lock()
-
-        client_ok = False
-        for _ in range(3):
-            try:
-                self.client = Client(self.__address, self.__family)
-            except ConnectionRefusedError:
-                time.sleep(0.5)
-            else:
-                client_ok = True
-                break
-        if not client_ok:
-            raise RuntimeError("Failed to init client")
-        response = self.client.recv()
-        if response["op"] == 0:
-            assert response["msg"] == "hello"
-        self.client_lock = threading.Lock()  # write lock
-        self.courier_thread = threading.Thread(target=self._courier, daemon=True)
-        self.courier_thread.start()
-
-    def _courier(self):
-        '''持续从client中recv，每得到一个结果，就（获取dict锁后）放入dict，激活event
-        '''
-        while True:
-            try:
-                result_dict = self.client.recv()
-            except EOFError:
-                break
-            except OSError:
-                # Server stoped
-                break
-
-            thread_id, result, exc = result_dict['id'], result_dict['result'], result_dict["exception"]
-            with self._result_dict_lock:
-                self._result_dict[thread_id]['result'] = result
-                self._result_dict[thread_id]["exception"] = exc
-                self._result_dict[thread_id]['event'].set()
-
-    def __getstate__(self):
-        need_reinit_client = hasattr(self, 'client')
-        if not hasattr(self, "config"):
-            self.config = {}
-        return (self.batch_size, self.__address, self.__family, need_reinit_client, self.config)
-
-    def __setstate__(self, state):
-        (self.batch_size, self.__address, self.__family, need_reinit_client, self.config) = state
-        if need_reinit_client:
-            self._reinit_client()
-
-    def __del__(self):
-        try:
-            self.close()
-        except Exception as e:
-            warnings.warn("There was an accident when oknlp exited. %s" % e)
-
+    
     def close(self):
         if self.__closed:
             return
-        if hasattr(self, "p_preprocess"):
-            for p in self.p_preprocess + self.p_postprocess + [self.p_infer, self.p_listener]:
-                p.terminate()
-            
-        if hasattr(self, 'client'):
-            self.client.close()
+        logger.info("Algorithm server %s stoped", self.algorithm.__class__.__name__)
+        all_sub_processes = [self.p_infer, self.p_listener] + self.p_preprocess + self.p_postprocess
+        for process in all_sub_processes:
+            process.terminate()
+        for process in all_sub_processes:
+            if process.is_alive():
+                process.join(1)
+                process.kill()
         self.__closed = True
+        
 
-    def __call__(self, sents):
-        '''线程根据自己的id，（获取client锁后）用client发数据，等待event，获取结果
-        '''
-        thread_id = threading.get_ident()
-        with self._result_dict_lock:
-            if thread_id not in self._result_dict:
-                self._result_dict[thread_id] = {'event': threading.Event(), 'result': None}
-            event = self._result_dict[thread_id]['event']
-            event.clear()
-        with self.client_lock:
-            self.client.send({
-                "op": 1,
-                "total_size": len(sents),
-                "data": sents,
-                "id": thread_id
-            })
-        event.wait()
-        with self._result_dict_lock:
-            result = self._result_dict[thread_id]['result']
-            del self._result_dict[thread_id]['result']
-            exc = self._result_dict[thread_id]['exception']
-            del self._result_dict[thread_id]['exception']
-            if exc is not None:
-                raise exc
-        return result
-
+    def _wait_stop_thread(self, evt):
+        evt.wait()
+        self.close()
+    
+    def __del__(self):
+        self.close()
+    
+    def _listener(self, q_input: mp.Queue, q_output: mp.Queue, __evt_server_stop, address, family, __evt_server_start):
+        server = AlgorithmListener(q_input, q_output, __evt_server_stop, address, family)
+        server.start()
+        __evt_server_start.set()
+        server.join()
+        
     def _preprocess(self, from_queue: mp.Queue, to_queue: mp.Queue):
-        """将数据从from_queue中取出，预处理后放入to_queue
-        """
-        signal.signal(signal.SIGTERM, handle_sigterm)
-        self.init_preprocess()
+        signal.signal(signal.SIGTERM, handle_sigterm("exit preprocess"))
+        self.algorithm.init_preprocess()
         while True:
             try:
                 query = from_queue.get()
             except KeyboardInterrupt:
                 break
             try:
-                query.data = self.preprocess(query.data)
+                query.data = self.algorithm.preprocess(query.data)
             except InterruptedError:
                 break
             except KeyboardInterrupt:
@@ -362,14 +296,12 @@ class BaseAlgorithm:
                 query.data = None
             to_queue.put(query)
 
-    def _infer(self, from_queue: mp.Queue, to_queue: mp.Queue):
-        """将数据从from_queue中取出，推理后放入to_queue
-        """
-        signal.signal(signal.SIGTERM, handle_sigterm)
-        self.init_inference()
+    def _infer(self, from_queue: mp.Queue, to_queue: mp.Queue, batch_size):
+        signal.signal(signal.SIGTERM, handle_sigterm("exit inference"))
+        self.algorithm.init_inference()
 
         batch_queue = queue.Queue(1)
-        builder = BatchBuilder(from_queue, batch_queue, to_queue, self.batch_size, self.pack_batch)
+        builder = BatchBuilder(from_queue, batch_queue, to_queue, batch_size, self.algorithm.pack_batch)
         t_batch = threading.Thread(target = builder.main, daemon=True)
         t_batch.start()
         
@@ -380,7 +312,7 @@ class BaseAlgorithm:
                 break
             try:
                 builder.inference = True
-                batch_data = self.inference(batch_data)
+                batch_data = self.algorithm.inference(batch_data)
                 builder.inference = False
             except InterruptedError:
                 break
@@ -395,10 +327,8 @@ class BaseAlgorithm:
                     to_queue.put( SingleQuery(serial_idx, idx, data) )
 
     def _postprocess(self, from_queue: mp.Queue, to_queue: mp.Queue):
-        """将数据从from_queue中取出，后处理后放入to_queue
-        """
-        signal.signal(signal.SIGTERM, handle_sigterm)
-        self.init_postprocess()
+        signal.signal(signal.SIGTERM, handle_sigterm("exit postprocess"))
+        self.algorithm.init_postprocess()
         while True:
             try:
                 query = from_queue.get()
@@ -408,7 +338,7 @@ class BaseAlgorithm:
                 to_queue.put(query)
                 continue
             try:
-                query.data = self.postprocess(query.data)
+                query.data = self.algorithm.postprocess(query.data)
             except KeyboardInterrupt:
                 break
             except InterruptedError:
@@ -418,29 +348,7 @@ class BaseAlgorithm:
                 query.exception = e
             to_queue.put(query)
     
-    def pack_batch(self, batch):
-        return batch
-    
-    def init_preprocess(self):
-        pass
-
-    def init_inference(self):
-        pass
-
-    def init_postprocess(self):
-        pass
-
-    def preprocess(self, x):
-        """对一个输入进行预处理
-        """
-        return x
-
-    def inference(self, batch):
-        """对一组输入进行推理
-        """
-        return batch
-
-    def postprocess(self, x):
-        """对一个输入进行后处理
-        """
-        return x
+    @property
+    def address(self):
+        return self.__address, self.__family
+        

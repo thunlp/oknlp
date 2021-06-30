@@ -1,8 +1,8 @@
 from typing import List, Tuple
-from ..BaseAlgorithm import BaseAlgorithm
+from ..abc import Algorithm
 
 
-class BasePosTagging(BaseAlgorithm):
+class BasePosTagging(Algorithm):
     def __call__(self, sents: List[str]) -> List[List[Tuple[str, str]]]:
         """
         Args:

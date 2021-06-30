@@ -3,11 +3,11 @@ import json
 from transformers import BertTokenizerFast
 import numpy as np
 import onnxruntime as rt
-from ..BaseTyping import BaseTyping
+from ...abc import BatchAlgorithm
 from ....auto_config import get_provider
 from ....data import load
 
-class BertTyping(BaseTyping):
+class BertTyping(BatchAlgorithm):
     """基于BERT的细粒度实体分类算法
 
     Args:

@@ -1,8 +1,8 @@
 from typing import List, Tuple
-from ..BaseAlgorithm import BaseAlgorithm
+from ..abc import Algorithm
 
 
-class BaseTyping(BaseAlgorithm):
+class BaseTyping(Algorithm):
     def __call__(self, sents: List[Tuple[str, Tuple[int, int]]]) -> List[List[Tuple[str, float]]]:
         """
         Args:

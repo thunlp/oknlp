@@ -1,8 +1,9 @@
+from typing import List
 from ...._C import THUlac
 from ....data import load
+from ..BaseCWS import BaseCWS
 
-
-class THUlacCWS:
+class THUlacCWS(BaseCWS):
     """基于THULAC的分词算法
 
     :Name: thulac
@@ -21,7 +22,7 @@ class THUlacCWS:
         self.model = THUlac(model_path)
         self.__closed = False
 
-    def __call__(self, sents):
+    def __call__(self, sents: List[str]) -> List[List[str]]:
         result = [self.model.cut(sent) for sent in sents]
         results = []
         for sep in result:

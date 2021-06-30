@@ -3,13 +3,13 @@ from functools import reduce
 from ....utils.format_output import format_output
 import numpy as np
 import onnxruntime as rt
-from ..BaseCWS import BaseCWS
+from ...abc import BatchAlgorithm
 from ....auto_config import get_provider
 from ....data import load
 from transformers import BertTokenizerFast
 
 labels = reduce(lambda x, y: x+y, [[f"{kd}-{l}" for kd in ('B','I','O')] for l in ('SEG',)])
-class BertCWS(BaseCWS):
+class BertCWS(BatchAlgorithm):
     """基于BERT的分词算法
 
     Args:

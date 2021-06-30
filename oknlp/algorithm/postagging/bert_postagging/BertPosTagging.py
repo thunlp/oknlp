@@ -4,11 +4,11 @@ from .class_list import classlist
 from ....utils.format_output import format_output
 import numpy as np
 import onnxruntime as rt
-from ..BasePosTagging import BasePosTagging
+from ...abc import BatchAlgorithm
 from ....auto_config import get_provider
 from ....data import load
 
-class BertPosTagging(BasePosTagging):
+class BertPosTagging(BatchAlgorithm):
     """基于BERT的词性标注算法
 
     Args:
