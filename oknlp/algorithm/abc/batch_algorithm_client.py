@@ -32,23 +32,24 @@ def _courier(algorithm_weakref, client):
         del self
 
 class BatchAlgorithmClient(Algorithm):
-    def __init__(self, address, family):
+    def __init__(self, address, family, server_name):
         self.__address = address
         self.__family = family
+        self.__server_name = server_name
         self.__closed = True
 
         self.__reinit()
     
     def __getstate__(self):
-        return (self.__address, self.__family, self.__closed)
+        return (self.__address, self.__family, self.__closed, self.__server_name)
 
     def __setstate__(self, state):
-        (self.__address, self.__family, self.__closed) = state
+        (self.__address, self.__family, self.__closed, self.__server_name) = state
         if not self.__closed:
             self.__reinit()
 
     def __reinit(self):
-        logger.info("[Process %d]: Client reinit called", mp.current_process().pid)
+        logger.info("[Process %d %s]: Client reinit called", mp.current_process().pid, self.__server_name)
         self._result_dict = {}
         self._result_dict_lock = threading.Lock()
 
@@ -71,7 +72,7 @@ class BatchAlgorithmClient(Algorithm):
         
         self.__closed = False
 
-        logger.info("[Process %d]: Client connected", mp.current_process().pid)
+        logger.info("[Process %d %s]: Client connected", mp.current_process().pid, self.__server_name)
 
         self.client_lock = threading.Lock()  # write lock
         self.courier_thread = threading.Thread(target=_courier, args=(weakref.ref(self), self.client), daemon=True)
@@ -80,12 +81,18 @@ class BatchAlgorithmClient(Algorithm):
     def close(self):
         if self.__closed:
             return
+        try:
+            self.client.send({"op": 2})
+        except BrokenPipeError:
+            # server already exited
+            pass
         self.client.close()
 
-        logger.info("[Process %d]: Client disconnected", mp.current_process().pid)
+        logger.info("[Process %d %s]: Client disconnected", mp.current_process().pid, self.__server_name)
         self.__closed = True
 
     def __del__(self):
+        logger.info("[Process %d %s]: __del__ called", mp.current_process().pid, self.__server_name)
         self.close()
     
     def __call__(self, sents : List[Any]):

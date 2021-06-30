@@ -8,7 +8,7 @@ class BatchAlgorithm(Algorithm):
         algorithm = super().__new__(cls)
         algorithm.__init__(*args, **kwargs)
         server = BatchAlgorithmServer(algorithm, **algorithm.settings)
-        client = BatchAlgorithmClient(*server.address) 
+        client = BatchAlgorithmClient(*server.address, algorithm.__class__.__name__) 
         return client
 
     def __init__(self, batch_size=1, num_preprocess=None, num_postprocess=None, max_queue_size=1024, multiprocessing_context = None):

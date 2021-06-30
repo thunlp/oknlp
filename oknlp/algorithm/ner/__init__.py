@@ -4,15 +4,11 @@ from .bert_ner import BertNER
 
 
 def get_by_name(name: str = "", **kwargs) -> BaseNER:
-    """根据条件获取一个NER类的实例，无法根据条件获取时返回BertNER()
+    """
+    目前支持的算法：
 
-    :param str name: NER类使用到的方法
-
-        * "bert"->返回以Bert模型实现的算法
-
-        * 默认返回以Bert模型实现的算法
-
-    :returns: 一个NER类的实例
+    * bert
+    
     """
     name = name.lower()
     if name == "bert":

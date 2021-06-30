@@ -54,9 +54,9 @@ class AlgorithmListener:
                 self.conn_list = list(filter(lambda x: not x.closed, self.conn_list))
                 if len(self.conn_list) == 0:
                     # all clients disconnected
+                    logger.info("No client, stop server")
                     self.server_stop_event.set()
                     break
-
             for conn in wait(self.conn_list, 1):
                 try:
                     request = conn.recv()
@@ -80,6 +80,10 @@ class AlgorithmListener:
                     # put in queue
                     for idx, it in enumerate(request["data"]):
                         self.q_input.put(SingleQuery(serial_idx, idx, it))
+                elif request["op"] == 2:
+                    conn.close()
+                else:
+                    logger.warning("Unknown request %s", request)
 
     def _thread_gather(self):
         while True:
@@ -200,6 +204,7 @@ class BatchAlgorithmServer:
         
         __evt_server_start = mp.Event()
         __evt_server_stop = mp.Event()
+        self.__closed = True
 
         p_preprocess = [
             multiprocessing.Process (
