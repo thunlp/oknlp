@@ -1,9 +1,9 @@
 import unittest
-from oknlp.algorithm.BaseAlgorithm import BaseAlgorithm
+from oknlp.algorithm.abc import BatchAlgorithm
 from multiprocessing.pool import ThreadPool
 
 
-class MyAlgorithm(BaseAlgorithm):
+class MyAlgorithm(BatchAlgorithm):
     def inference(self, batch):
         return batch
     

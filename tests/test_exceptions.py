@@ -1,5 +1,5 @@
 import unittest
-from oknlp.algorithm.BaseAlgorithm import BaseAlgorithm
+from oknlp.algorithm.abc import BatchAlgorithm
 
 class MyException1(Exception):
     pass
@@ -7,7 +7,7 @@ class MyException1(Exception):
 class MyException2(Exception):
     pass
 
-class MyAlgorithm(BaseAlgorithm):
+class MyAlgorithm(BatchAlgorithm):
     def inference(self, batch):
         return batch
     
