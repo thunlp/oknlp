@@ -102,17 +102,17 @@
     <div id="instructions">
         <div id="pip-cpu">
             <h3>安装指令</h3>
-            <pre>pip install onnxruntime oknlp</pre>
+            <pre>pip install "oknlp[cpu]"</pre>
         </div>
         
         <div id="conda-cpu">
             <h3>安装指令</h3>
-            <pre>pip install onnxruntime oknlp</pre>
+            <pre>pip install "oknlp[cpu]"</pre>
         </div>
 
         <div id="source-cpu">
             <h3>安装指令</h3>
-            <pre>pip install onnxruntime
+            <pre>pip install onnxruntime==1.8.0
     git clone https://github.com/PLNUHT/oknlp.git
     cd oknlp
     python setup.py install</pre>
@@ -120,7 +120,7 @@
 
         <div id="pip-cu102">
             <h3>安装指令</h3>
-            <pre>pip install onnxruntime-gpu==1.6.0 oknlp</pre>
+            <pre>pip install "oknlp[cu102]"</pre>
             <h3>环境依赖</h3>
             <ul>
                 <li>CUDA: 10.2 <a href="https://developer.nvidia.com/cuda-10.2-download-archive" target="_blank">下载地址</a></li>
@@ -130,7 +130,7 @@
 
         <div id="pip-cu110">
             <h3>安装指令</h3>
-            <pre>pip install onnxruntime-gpu==1.7.0 oknlp</pre>
+            <pre>pip install "oknlp[cu11x]"</pre>
             <h3>环境依赖</h3>
             <ul>
                 <li>CUDA: 11.X <a href="https://developer.nvidia.com/cuda-downloads" target="_blank">下载地址</a></li>
@@ -141,13 +141,13 @@
         <div id="conda-cu102">
             <h3>安装指令</h3>
             <pre>conda install -c conda-forge cudatoolkit=10.2 cudnn=8
-    pip install onnxruntime-gpu==1.6.0 oknlp</pre>
+    pip install "oknlp[cu102]"</pre>
         </div>
 
         <div id="conda-cu110">
             <h3>安装指令</h3>
             <pre>conda install -c conda-forge cudatoolkit=11 cudnn=8
-    pip install onnxruntime-gpu==1.7.0 oknlp</pre>
+    pip install "oknlp[cu11x]"</pre>
         </div>
 
         <div id="mac-cuda">

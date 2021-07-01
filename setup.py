@@ -40,7 +40,7 @@ def main():
             )
         ],
         extras_require={
-            "": ["onnxruntime"],
+            "cpu": ["onnxruntime==1.8.0"],
             "cu102": ["onnxruntime-gpu==1.6.0"],
             "cu11x": ["onnxruntime-gpu==1.7.0"],
             "cu110": ["onnxruntime-gpu==1.7.0"],
