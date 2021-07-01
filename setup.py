@@ -38,7 +38,15 @@ def main():
                     "csrc/thulac/include"
                 ],
             )
-        ]
+        ],
+        extras_require={
+            "": ["onnxruntime"],
+            "cu102": ["onnxruntime-gpu==1.6.0"],
+            "cu11x": ["onnxruntime-gpu==1.7.0"],
+            "cu110": ["onnxruntime-gpu==1.7.0"],
+            "cu111": ["onnxruntime-gpu==1.7.0"],
+            "cu112": ["onnxruntime-gpu==1.7.0"],
+        }
     )
 
 if __name__ == "__main__":
