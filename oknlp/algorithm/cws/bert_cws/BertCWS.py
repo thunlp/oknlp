@@ -6,6 +6,7 @@ import onnxruntime as rt
 from ...abc import BatchAlgorithm
 from ....auto_config import get_provider
 from ....data import load
+from ....utils import DictExtraction
 from transformers import BertTokenizerFast
 
 labels = reduce(lambda x, y: x+y, [[f"{kd}-{l}" for kd in ('B','I','O')] for l in ('SEG',)])
@@ -29,8 +30,11 @@ class BertCWS(BatchAlgorithm):
         oknlp.cws.get_by_name("bert", device="cpu")
     """
 
-    def __init__(self, device = None, *args, **kwargs):
+    def __init__(self, dictionary = [], device = None, *args, **kwargs):
 
+        self.keyword_processor=DictExtraction(case_sensitive = False)
+
+        self.keyword_processor.add_keywords_from_list(dictionary)
         provider, provider_op, fp16_mode, batch_size = get_provider(device)
         if not fp16_mode:
             model_path = load('cws.bert','fp32')
@@ -55,6 +59,9 @@ class BertCWS(BatchAlgorithm):
         return x, sx
 
     def postprocess(self, x, *args, **kwargs):
+        words = self.keyword_processor.extract_dictwords(x[0])
+        for i in words:
+           x[1][i-1:words[i]+1] = [1] + [0] * (words[i]-i) +[1]
         return [x[0][j[1]:j[2] + 1] for j in format_output(x[1], labels + ['O']) if x[0][j[1]:j[2] + 1]]
 
     def init_inference(self):
@@ -73,6 +80,7 @@ class BertCWS(BatchAlgorithm):
         self.label_name = self.sess.get_outputs()[0].name
 
     def pack_batch(self, batch):
+        
         max_len = max([len(i[1]) for i in batch])
         input_array = np.zeros((len(batch), max_len), dtype=np.int32)
         att_array = np.zeros((len(batch), max_len), dtype=np.int32)
@@ -84,7 +92,7 @@ class BertCWS(BatchAlgorithm):
 
             new_batch.append((sent, len(tokens)))
         
-        input_feed = {self.input_name: input_array, self.att_name: att_array }
+        input_feed = {self.input_name: input_array, self.att_name: att_array}
         return new_batch, input_feed
 
     def inference(self, batch):
