@@ -8,6 +8,11 @@ class MyException2(Exception):
     pass
 
 class MyAlgorithm(BatchAlgorithm):
+
+    def __init__(self):
+        self.sent_split = False
+        super().__init__()
+
     def inference(self, batch):
         return batch
     

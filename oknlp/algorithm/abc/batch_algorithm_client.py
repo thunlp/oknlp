@@ -99,7 +99,6 @@ class BatchAlgorithmClient(Algorithm):
     
     def __call__(self, sents : List[Any], max_length = 128):
         if self.split_sent:
-            print('++++++++++++++++++++++++++++')
             sents, is_end = split_text_list(sents, max_length)
         thread_id = threading.get_ident()
         with self._result_dict_lock:

@@ -4,6 +4,10 @@ from multiprocessing.pool import ThreadPool
 
 
 class MyAlgorithm(BatchAlgorithm):
+    def __init__(self,*args,**kwargs):
+        self.sent_split = False
+        super().__init__(*args,**kwargs)
+
     def inference(self, batch):
         return batch
     
