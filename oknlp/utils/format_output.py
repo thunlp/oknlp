@@ -1,8 +1,5 @@
 # copy from seqeval package
-
-
 import warnings
-
 
 def format_output(pred, classlist):
     pred = [classlist[p] for p in pred[1:-1]]

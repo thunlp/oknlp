@@ -1,5 +1,6 @@
 import os
 from functools import reduce
+from typing import Any, List
 from ....utils.format_output import format_output
 import numpy as np
 import onnxruntime as rt
@@ -10,6 +11,7 @@ from ....utils import DictExtraction
 from transformers import BertTokenizerFast
 
 labels = reduce(lambda x, y: x+y, [[f"{kd}-{l}" for kd in ('B','I','O')] for l in ('SEG',)])
+
 class BertCWS(BatchAlgorithm):
     """基于BERT的分词算法
 
@@ -36,6 +38,7 @@ class BertCWS(BatchAlgorithm):
 
         self.keyword_processor.add_keywords_from_list(dictionary)
         provider, provider_op, fp16_mode, batch_size = get_provider(device)
+        self.sent_split = True
         if not fp16_mode:
             model_path = load('cws.bert','fp32')
         else:
@@ -49,6 +52,11 @@ class BertCWS(BatchAlgorithm):
         if "batch_size" not in kwargs:
             kwargs["batch_size"] = batch_size
         super().__init__(*args, **kwargs)
+
+    # @staticmethod
+    # def segment(self, sents : List[Any], max_length = 128):
+    #     sents, is_end = split_text_list(sents, max_length)
+    #     return merge_result(results, is_end)
 
     def init_preprocess(self):
         self.tokenizer = self.config["tokenizer"]

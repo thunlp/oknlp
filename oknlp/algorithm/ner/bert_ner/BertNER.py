@@ -44,6 +44,7 @@ class BertNER(BatchAlgorithm):
         }
         if "batch_size" not in kwargs:
             kwargs["batch_size"] = batch_size
+        self.sent_split = True
         super().__init__(*args,**kwargs)
     
     def init_preprocess(self):
@@ -69,7 +70,7 @@ class BertNER(BatchAlgorithm):
         self.input_name = self.sess.get_inputs()[0].name
         self.att_name = self.sess.get_inputs()[1].name 
         self.label_name = self.sess.get_outputs()[0].name
-    
+        
     def pack_batch(self, batch):
         max_len = max([len(tokens) for _, tokens in batch])
         input_array = np.zeros((len(batch), max_len), dtype=np.int32)

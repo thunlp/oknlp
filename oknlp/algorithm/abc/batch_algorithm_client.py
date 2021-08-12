@@ -6,6 +6,8 @@ import threading
 import time
 import weakref
 import logging
+from ...utils.process_io import split_text_list, merge_result
+
 logger = logging.getLogger("oknlp")
 
 def _courier(algorithm_weakref, client):
@@ -32,12 +34,12 @@ def _courier(algorithm_weakref, client):
         del self
 
 class BatchAlgorithmClient(Algorithm):
-    def __init__(self, address, family, server_name):
+    def __init__(self, address, family, server_name, split_sent):
         self.__address = address
         self.__family = family
         self.__server_name = server_name
         self.__closed = True
-
+        self.split_sent = split_sent
         self.__reinit()
     
     def __getstate__(self):
@@ -95,7 +97,10 @@ class BatchAlgorithmClient(Algorithm):
         logger.info("[Process %d %s]: __del__ called", mp.current_process().pid, self.__server_name)
         self.close()
     
-    def __call__(self, sents : List[Any]):
+    def __call__(self, sents : List[Any], max_length = 128):
+        if self.split_sent:
+            print('++++++++++++++++++++++++++++')
+            sents, is_end = split_text_list(sents, max_length)
         thread_id = threading.get_ident()
         with self._result_dict_lock:
             if thread_id not in self._result_dict:
@@ -117,4 +122,7 @@ class BatchAlgorithmClient(Algorithm):
             del self._result_dict[thread_id]['exception']
             if exc is not None:
                 raise exc
-        return result
+        if self.split_sent:
+            return merge_result(result, is_end)
+        else:
+            return result
