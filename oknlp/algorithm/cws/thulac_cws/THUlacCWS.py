@@ -3,7 +3,7 @@ from ...._C import THUlac
 from ....data import load
 from ..BaseCWS import BaseCWS
 from ....utils import DictExtraction
-from ....utils.format_output import format_output
+from ....utils.format_output import format_output, dict_format
 from functools import reduce
 
 labels = reduce(lambda x, y: x+y, [[f"{kd}-{l}" for kd in ('B','I','O')] for l in ('SEG',)])
@@ -12,7 +12,7 @@ class THUlacCWS(BaseCWS):
 
     :Name: thulac
 
-    更多信息请参考 thulafc 文档： `http://thulac.thunlp.org/ <http://thulac.thunlp.org/>`_ 。
+    更多信息请参考 thulac 文档： `http://thulac.thunlp.org/ <http://thulac.thunlp.org/>`_ 。
 
     **示例**
 
@@ -26,42 +26,7 @@ class THUlacCWS(BaseCWS):
         self.model = THUlac(model_path)
         self.__closed = False
         self.keyword_processor=DictExtraction(case_sensitive = False)
-        self.keyword_processor.add_keywords_from_list(dictionary)
-
-    def _seg_new_word(self, seg_list):
-        sent = ''.join(seg_list)
-        words = self.keyword_processor.extract_dictwords(sent)
-        seps = []
-        tag = 0
-        count = 0
-        tag_end = 0
-        for seg in seg_list:
-            if tag_end != 0:
-                if tag_end < len(seg):
-                    seps.append(seps.pop() + seg[ : tag_end])
-                    seg = seg[tag_end : ]
-                    count += tag_end
-                    tag_end = 0
-                else:
-                    seps.append(seps.pop() + seg[ : tag_end])
-                    tag_end -= len(seg)
-                    count += len(seg)
-                    continue
-            for idx in range(count,count+len(seg)):
-                if idx in words:
-                    tag = 1
-                    seps.append(seg[ : idx-count-1])
-                    if count+len(seg) > words[idx]:
-                        seps.append(seg[idx-count: words[idx]-count])
-                    else:
-                        seps.append(seg[idx-count: ])
-                        tag_end = words[idx] - (count + len(seg)-1)
-            if tag ==0:
-                seps.append(seg)
-            count += len(seg)
-            tag =0
-        return seps
-            
+        self.keyword_processor.add_keywords_from_list(dictionary)            
 
     def __call__(self, sents: List[str]) -> List[List[str]]:
         result = [self.model.cut(sent) for sent in sents]
@@ -70,7 +35,7 @@ class THUlacCWS(BaseCWS):
             if sep[-1] == '\n':
                 sep = sep[:-1]
             results.append(sep)
-        results = [self._seg_new_word(result) for result in results]
+        results = [dict_format(result, self.keyword_processor.extract_dictwords(''.join(result))) for result in results]
          
         return results
     def close(self):

@@ -1,7 +1,7 @@
 import os
 from functools import reduce
 from typing import Any, List
-from ....utils.format_output import format_output
+from ....utils.format_output import format_output, dict_format
 import numpy as np
 import onnxruntime as rt
 from ...abc import BatchAlgorithm
@@ -11,7 +11,6 @@ from ....utils import DictExtraction
 from transformers import BertTokenizerFast
 
 labels = reduce(lambda x, y: x+y, [[f"{kd}-{l}" for kd in ('B','I','O')] for l in ('SEG',)])
-
 class BertCWS(BatchAlgorithm):
     """基于BERT的分词算法
 
@@ -67,10 +66,8 @@ class BertCWS(BatchAlgorithm):
         return x, sx
 
     def postprocess(self, x, *args, **kwargs):
-        words = self.keyword_processor.extract_dictwords(x[0])
-        for i in words:
-           x[1][i-1:words[i]+1] = [1] + [0] * (words[i]-i) +[1]
-        return [x[0][j[1]:j[2] + 1] for j in format_output(x[1], labels + ['O']) if x[0][j[1]:j[2] + 1]]
+        segmentation = [x[0][j[1]:j[2] + 1] for j in format_output(x[1], labels + ['O']) if x[0][j[1]:j[2] + 1]]
+        return dict_format(segmentation, self.keyword_processor.extract_dictwords(x[0]))
 
     def init_inference(self):
         sess_options = rt.SessionOptions()
