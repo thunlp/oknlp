@@ -22,7 +22,7 @@ class TestTasks(unittest.TestCase):
             for sent, result in zip(sents, results):
                 sent_r = ''.join(result)
                 self.assertEqual(sent, sent_r)
-                self.assertIn(dictionary[1],sent)
+                self.assertIn(dictionary[0],sent)
             cws.close()
 
     def test_pos_tagging(self):
