@@ -1,8 +1,5 @@
 # copy from seqeval package
-
-
 import warnings
-
 
 def format_output(pred, classlist):
     pred = [classlist[p] for p in pred[1:-1]]
@@ -10,6 +7,39 @@ def format_output(pred, classlist):
     box = [(b[0], b[1], b[2]) for b in boxes] 
     return box
 
+def dict_format(seg_list, words):
+    new_segs = []
+    tag = 0
+    count = 0
+    tag_end = 0
+    for seg in seg_list:
+        if tag_end != 0:
+            if tag_end < len(seg):
+                new_segs.append(new_segs.pop() + seg[ : tag_end])
+                seg = seg[tag_end : ]
+                count += tag_end
+                tag_end = 0
+            else:
+                new_segs.append(new_segs.pop() + seg[ : tag_end])
+                tag_end -= len(seg)
+                count += len(seg)
+                continue
+        for idx in range(count,count+len(seg)):
+            if idx in words:
+                tag = 1
+                if idx != 0:
+                    new_segs.append(seg[ : idx-count-1])
+                if count+len(seg) > words[idx]:
+                    new_segs.append(seg[idx-count: words[idx]-count+1])
+                    new_segs.append(seg[words[idx]-count+1 : ])
+                else:
+                    new_segs.append(seg[idx-count: ])
+                    tag_end = words[idx] - (count + len(seg)-1)
+        if tag ==0:
+            new_segs.append(seg)
+        count += len(seg)
+        tag =0
+    return new_segs
 
 def get_entities(seq, suffix=False):
     """Gets entities from sequence.

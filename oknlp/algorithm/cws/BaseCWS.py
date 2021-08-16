@@ -1,10 +1,10 @@
 from typing import List
 from ..abc import Algorithm
-
+from ...utils.process_io import split_text_list, merge_result
 
 class BaseCWS(Algorithm):
 
-    def __call__(self, sents: List[str]) -> List[List[str]]:
+    def __call__(self, sents: List[str], max_len = 12) -> List[List[str]]:
         """
         Args:
             sents: 输入的句子列表。
@@ -20,4 +20,7 @@ class BaseCWS(Algorithm):
             [['我', '爱', '北京', '天安门']]
         
         """
+       
         return super().__call__(sents)
+        
+        

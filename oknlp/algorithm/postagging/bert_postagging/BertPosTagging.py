@@ -42,6 +42,7 @@ class BertPosTagging(BatchAlgorithm):
         }
         if "batch_size" not in kwargs:
             kwargs["batch_size"] = batch_size
+        self.sent_split = True
         super().__init__(*args,**kwargs)
 
 

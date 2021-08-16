@@ -13,7 +13,7 @@
 ### CPU only
 
 ```shell
-$ pip install onnxruntime oknlp
+$ pip install "oknlp[cpu]"
 ```
 
 ### GPU
@@ -90,3 +90,11 @@ if __name__ == "__main__":
 ```
 
 完整文档请参考 [细粒度实体分类 - OKNLP文档](https://oknlp.readthedocs.io/zh/stable/examples/typing.html)
+
+## 贡献者
+
+<a href="https://github.com/a710128">@a710128</a>
+
+<a href="https://github.com/Yumiko-188">@Yumiko-188</a>
+
+<a href="https://github.com/HuShaoRu">@HuShaoRu</a>
