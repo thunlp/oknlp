@@ -15,15 +15,30 @@ class TestTasks(unittest.TestCase):
 
     def test_cws(self):
         sents = ["清华大学自然语言处理与社会人文计算实验室"]
-        dictionary = ['清华大学自然语言处理']
-        for cws in oknlp.cws.get_all(dictionary = dictionary):
+        for cws in oknlp.cws.get_all():
             results = cws(sents)
             self.assertEqual(len(sents), len(results))
             for sent, result in zip(sents, results):
                 sent_r = ''.join(result)
                 self.assertEqual(sent, sent_r)
-                self.assertIn(dictionary[0],sent)
             cws.close()
+    
+    def test_cws_dictionary(self):
+        sents = ["清华大学自然语言处理与社会人文计算实验室"]
+        dictionary = ['清华大学自然语言处理']
+        for cws in oknlp.cws.get_all():
+            results = cws(sents)
+            for result in results:
+                for word_in_dict in dictionary:
+                    self.assertNotIn(word_in_dict, result)
+            cws.close()
+        for cws in oknlp.cws.get_all(dictionary = dictionary):
+            results = cws(sents)
+            for result in results:
+                for word_in_dict in dictionary:
+                    self.assertIn(word_in_dict, result)
+            cws.close()
+        
 
     def test_pos_tagging(self):
         sents = ["清华大学自然语言处理与社会人文计算实验室"]

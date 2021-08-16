@@ -4,7 +4,7 @@ from ...utils.process_io import split_text_list, merge_result
 
 class BaseCWS(Algorithm):
 
-    def __call__(self, sents: List[str],max_len = 12) -> List[List[str]]:
+    def __call__(self, sents: List[str], max_len = 12) -> List[List[str]]:
         """
         Args:
             sents: 输入的句子列表。
