@@ -1,7 +1,7 @@
 from typing import List
 from .BaseCWS import BaseCWS
 from .thulac_cws import THUlacCWS
-from .bert_cws import BertCWS
+from .bert_cws import BertCWS 
 
 def get_by_name(name: str = "", **kwargs) -> BaseCWS:
     """

@@ -49,6 +49,7 @@ class BertTyping(BatchAlgorithm):
         }
         if "batch_size" not in kwargs:
             kwargs["batch_size"] = batch_size
+        self.sent_split = False
         super().__init__(*args, **kwargs)
        
     def init_preprocess(self):
