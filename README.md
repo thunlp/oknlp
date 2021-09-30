@@ -91,10 +91,14 @@ if __name__ == "__main__":
 
 完整文档请参考 [细粒度实体分类 - OKNLP文档](https://oknlp.readthedocs.io/zh/stable/examples/typing.html)
 
-## 贡献者
+## 贡献者列表
 
 <a href="https://github.com/a710128">@a710128</a>
 
 <a href="https://github.com/Yumiko-188">@Yumiko-188</a>
 
 <a href="https://github.com/HuShaoRu">@HuShaoRu</a>
+
+## 相关合作
+
+本项目由腾讯 TencentNLP 部门提供技术与数据支持。
